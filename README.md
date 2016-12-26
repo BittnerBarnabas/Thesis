@@ -14,4 +14,4 @@ To see the difference between a snapshot of clang-tools-extra and the current st
     git clone <repo-url>
     git remote add upstream https://github.com/BittnerBarnabas/clang-tools-extra.git
     git fetch upstream
-    git diff HEAD:clang-tools-extra/ upstream/master
+    git diff upstream/master HEAD:clang-tools-extra/
