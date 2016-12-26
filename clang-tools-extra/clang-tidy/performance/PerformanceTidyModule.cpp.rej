@@ -1,0 +1,19 @@
+--- clang-tidy/performance/PerformanceTidyModule.cpp
++++ clang-tidy/performance/PerformanceTidyModule.cpp
+@@ -11,6 +11,7 @@
+ #include "../ClangTidyModule.h"
+ #include "../ClangTidyModuleRegistry.h"
+ #include "InefficientStringConcatenationCheck.h"
++#include "InefficientStreamUseCheck.h"
+ 
+ #include "FasterStringFindCheck.h"
+ #include "ForRangeCopyCheck.h"
+@@ -33,6 +34,8 @@ public:
+         "performance-implicit-cast-in-loop");
+     CheckFactories.registerCheck<InefficientStringConcatenationCheck>(
+         "performance-inefficient-string-concatenation");
++    CheckFactories.registerCheck<InefficientStreamUseCheck>(
++        "performance-InefficientStreamUse");
+     CheckFactories.registerCheck<UnnecessaryCopyInitialization>(
+         "performance-unnecessary-copy-initialization");
+     CheckFactories.registerCheck<UnnecessaryValueParamCheck>(
