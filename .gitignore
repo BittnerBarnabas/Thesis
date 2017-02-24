@@ -1,1 +1,15 @@
 .DS_Store
+
+*.out
+
+*.aux
+
+*.bbl
+
+*.blg
+
+*.log
+
+Thesis/Documentation/thesis_main\.synctex\.gz
+
+*.toc
