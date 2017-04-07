@@ -1,0 +1,54 @@
+This is BibTeX, Version 0.99d (TeX Live 2016)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: thesis_main.aux
+The style file: ieeetr.bst
+Database file #1: references.bib
+Too many commas in name 1 of "BA Wichmann, AA. Canning, D.L. Clutterbuck, LA Winsborrow, N.J. Ward and D.W.R. Marsh" for entry dynamic_analysis
+while executing---line 969 of file ieeetr.bst
+Too many commas in name 1 of "BA Wichmann, AA. Canning, D.L. Clutterbuck, LA Winsborrow, N.J. Ward and D.W.R. Marsh" for entry dynamic_analysis
+while executing---line 969 of file ieeetr.bst
+Warning--empty author in llvm_mainpage
+Warning--empty journal in llvm_mainpage
+Warning--empty year in llvm_mainpage
+You've used 3 entries,
+            1876 wiz_defined-function locations,
+            495 strings with 4125 characters,
+and the built_in function-call counts, 501 in all, are:
+= -- 43
+> -- 17
+< -- 0
++ -- 7
+- -- 4
+* -- 37
+:= -- 79
+add.period$ -- 5
+call.type$ -- 3
+change.case$ -- 3
+chr.to.int$ -- 0
+cite$ -- 6
+duplicate$ -- 31
+empty$ -- 59
+format.name$ -- 4
+if$ -- 116
+int.to.chr$ -- 0
+int.to.str$ -- 3
+missing$ -- 3
+newline$ -- 15
+num.names$ -- 2
+pop$ -- 16
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 6
+stack$ -- 0
+substring$ -- 0
+swap$ -- 2
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 3
+while$ -- 2
+width$ -- 4
+write$ -- 30
+(There were 2 error messages)

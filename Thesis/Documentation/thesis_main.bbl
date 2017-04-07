@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{dynamic_analysis}
+D.~C. L. W. N.~W. BA~Wichmann, AA.~Canning and D.~Marsh, ``ndustrial
+  perspective on static analysis,'' {\em Software Engineering Journal}, 1995.
+\newblock
+  \url{https://web.archive.org/web/20110927010304/http://www.ida.liu.se/~TDDC90/papers/industrial95.pdf}.
+
+\bibitem{llvm_mainpage}
+``The llvm compiler infrastructure,''
+\newblock \url{http://llvm.org/}.
+
+\bibitem{LLVM:CGO04}
+C.~Lattner and V.~Adve, ``{LLVM: A Compilation Framework for Lifelong Program
+  Analysis \& Transformation},'' in {\em {Proceedings of the 2004 International
+  Symposium on Code Generation and Optimization (CGO'04)}}, (Palo Alto,
+  California), Mar 2004.
+\newblock \url{http://llvm.org/pubs/2004-01-30-CGO-LLVM.html}.
+
+\end{thebibliography}
