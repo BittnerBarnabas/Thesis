@@ -1,1 +1,15 @@
 .DS_Store
+
+*.aux
+
+*.bcf
+
+*.log
+
+*.out
+
+Thesis/Documentation/thesis_main\.run\.xml
+
+*.gz
+
+*.toc
