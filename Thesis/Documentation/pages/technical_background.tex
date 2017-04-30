@@ -1,16 +1,27 @@
 \section{Technical background}
-\par In this section I will outline pieces of technology related to the main goal of this thesis. Starting from the global framework I'm integrating modules into to the abstract representation of a C++ application.
-
+\par In this section I will outline different technologies related to the main goal of this thesis. Starting from the global framework, which I'm integrating modules into, to the abstract representation of a C++ application. Also I will highligth the importance of every module to the global picture.
 
 \subsection{LLVM}
-\par LLVM formerly known as Low Level Virtual Machine is a "collection of the reusable and modular compiler technologies"\cite{llvm_mainpage}. LLVM started out as a university project\cite{LLVM:CGO04}, and since then it grew significantly in size and it now offers numerous subprojects which help building and maintining both commercial and open-source applications.
+\par LLVM formerly known as Low Level Virtual Machine is a "collection of the reusable and modular compiler technologies"\cite{llvm_mainpage}. LLVM started out as a university project\cite{LLVM:CGO04}, and since then it grew significantly in size and it now offers numerous subprojects which help building and maintining both commercial and open-source applications. \medskip
 \par The essential goal of LLVM is to provide generalized optimizations to arbitrary programming languages using the LLVM Intermediate Language also known as LLVM IR, which acts as a common representation of different programming languages. This is achieved through using specific language front-ends, which transforms the given language to LLVM IR. 
 \begin{figure}[h]
 	\caption{LLVM workflow}
 	\includegraphics[scale=0.33]{images/llvm_flow}
 \end{figure}
+\par A common use-case of LLVM begins with an aforementioned language font-end, which will tranform a given language, C++ in our case, to LLVM IR. The common optimizer, then will perform certain optimizations with this intermediate representation depending on the various settings, for instance if we want smaller or faster code. After the optimizer did its job it will transfer the optimized IR to a certain back-end, again depending on different settings, which will generate the actual executable code for the specified architecture. \medskip
+\par Apart from defining a generalized way of code optimization LLVM provides a full framework of other utility classes and tools, with which one can write better, faster code.
 
 \subsection{Clang}
-\par The most popular C/C++ familiy compiler front-end for LLVM is Clang which aims to excel from the open-source compilers with it exceptionally fast compile-times and user-friendly diagnostic messages. 
+\par The most widely spread C/C++ familiy compiler front-end for LLVM is Clang which aims to excel from the open-source compilers with its exceptionally fast compile-times and user-friendly diagnostic messages\cite{clang_features}. Because of its library oriented design it's really easy to integrate new modules into the Clang ecosystem and also it can be scaled much more effectively than a monolithic system. \medskip
+\par Clang tries to be as user-friendly as possible with its expressive diagnostic messages emitted during compilation. This includes for instance printing the exact location where the erronous code is, displaying a caret icon (\^{}) at the exact spot. Also Clang's output is colored by default making it easier to see what the problem is. Also Clang can represent intervals in the output to show which segment of the code needs changing, along with so-called FixItHints which are little modifications to the code required to fix a certain problem. These can include inserting new code, removing old, and modifying existing.
+\begin{figure}[h]
+	\caption{Clang diagnostic}
+	\includegraphics[scale = 0.4]{images/clang_diag}
+\end{figure}
+\begin{figure}[h]
+	\caption{GCC diagnostic on the same error}
+	\includegraphics[scale = 0.337]{images/gcc_diag}
+\end{figure}
+\par Clang currently supports the vast majority of the newest features of the in-progress C++17 Standard, and fully supports C++98, C++11 and C++14\cite{clang_language_support}. 
 \subsection{Clang-tidy}
 \subsection{Abstract syntax tree - AST}

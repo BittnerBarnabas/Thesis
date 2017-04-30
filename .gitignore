@@ -13,3 +13,9 @@ Thesis/Documentation/thesis_main\.run\.xml
 *.gz
 
 *.toc
+
+*.bbl
+
+*.blg
+
+*.lof
