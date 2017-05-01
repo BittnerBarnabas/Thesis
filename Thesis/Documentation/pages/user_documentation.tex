@@ -1,4 +1,24 @@
 \section{User documentation}
+\subsection{Problems solved by new modules}
+\par The four new modules created for Clang-tidy aim to address four fairy distinctive and inefficient programming patterns. 
+\subsubsection{Inefficient String Concatenation\cite{clang_tidy_string_concat}}
+\par The first problem involves the standard library's string class. This class, more precisely \\\verb|std::basic_string<char>|, is the default implementation of a modifiable high-level character sequence in the language. It provides several functions which can modify, transform the underlying characters. \medskip
+\par The problem arises when one wants to concatenate two or more strings. There are several methods achieving the concatenation: \verb|operator+|, \verb|operator+=| and \verb|.append| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  
+\begin{lstlisting}[language=c++, frame=single ,caption={Highly inefficient code}, label={lst:ineff_string_concat}]
+std::string a("Foo"), b("Baz");
+for (int i = 0; i < 20000; ++i) 
+{
+	a = a + "Bar" + b;
+}
+\end{lstlisting}
+\par This program could be refactored into a much faster code using either \verb|operator+=| or \verb|.append()| member function as shown in Listing:\ref{lst:ineff_string_solved}.
+ \begin{lstlisting}[language=c++, frame=single ,caption={A more efficient version}, label={lst:ineff_string_solved}]
+std::string a("Foo"), b("Baz");
+for (int i = 0; i < 20000; ++i) 
+{
+	a.append("Bar").append(b);
+}
+ \end{lstlisting}
 \subsection{Installing the program}
 \subsubsection{Windows}
 \subsubsection{Linux}

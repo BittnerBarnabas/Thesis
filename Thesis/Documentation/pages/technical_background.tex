@@ -2,18 +2,18 @@
 \par In this section I will outline different technologies related to the main goal of this thesis. Starting from the global framework, which I'm integrating modules into, to the abstract representation of a C++ application. Also I will highligth the importance of every module to the global picture.
 
 \subsection{LLVM}
-\par LLVM formerly known as Low Level Virtual Machine is a "collection of the reusable and modular compiler technologies"\cite{llvm_mainpage}. LLVM started out as a university project\cite{LLVM:CGO04}, and since then it grew significantly in size and it now offers numerous subprojects which help building and maintining both commercial and open-source applications. \medskip
+\par LLVM formerly known as Low Level Virtual Machine is a "collection of the reusable and modular compiler technologies"\cite{llvm_mainpage}. LLVM started out as a university project\cite{LLVM:CGO04}, and since then it grew significantly in size and it now offers numerous subprojects which help building and maintaining both commercial and open-source applications. \medskip
 \par The essential goal of LLVM is to provide generalized optimizations to arbitrary programming languages using the LLVM Intermediate Language also known as LLVM IR, which acts as a common representation of different programming languages. This is achieved through using specific language front-ends, which transforms the given language to LLVM IR. 
 \begin{figure}[h]
 	\caption{LLVM workflow}
 	\includegraphics[scale=0.33]{images/llvm_flow}
 \end{figure}
-\par A common use-case of LLVM begins with an aforementioned language font-end, which will tranform a given language, C++ in our case, to LLVM IR. The common optimizer, then will perform certain optimizations with this intermediate representation depending on the various settings, for instance if we want smaller or faster code. After the optimizer did its job it will transfer the optimized IR to a certain back-end, again depending on different settings, which will generate the actual executable code for the specified architecture. \medskip
+\par A common use-case of LLVM begins with an aforementioned language font-end, which will transform a given language, C++ in our case, to LLVM IR. The common optimizer, then will perform certain optimizations with this intermediate representation depending on the various settings, for instance if we want smaller or faster code. After the optimizer did its job it will transfer the optimized IR to a certain back-end, again depending on different settings, which will generate the actual executable code for the specified architecture. \medskip
 \par Apart from defining a generalized way of code optimization LLVM provides a full framework of other utility classes and tools, with which one can write better, faster code.
 
 \subsection{Clang}
-\par The most widely spread C/C++ familiy compiler front-end for LLVM is Clang which aims to excel from the open-source compilers with its exceptionally fast compile-times and user-friendly diagnostic messages\cite{clang_features}. Because of its library oriented design it's really easy to integrate new modules into the Clang ecosystem and also it can be scaled much more effectively than a monolithic system. \medskip
-\par Clang tries to be as user-friendly as possible with its expressive diagnostic messages emitted during compilation. This includes for instance printing the exact location where the erronous code is, displaying a caret icon (\^{}) at the exact spot. Also Clang's output is colored by default making it easier to see what the problem is. Also Clang can represent intervals in the output to show which segment of the code needs changing, along with so-called FixItHints which are little modifications to the code required to fix a certain problem. These can include inserting new code, removing old, and modifying existing.
+\par The most widely spread C/C++ family compiler front-end for LLVM is Clang which aims to excel from the open-source compilers with its exceptionally fast compile-times and user-friendly diagnostic messages\cite{clang_features}. Because of its library oriented design it's really easy to integrate new modules into the Clang ecosystem and also it can be scaled much more effectively than a monolithic system. \medskip
+\par Clang tries to be as user-friendly as possible with its expressive diagnostic messages emitted during compilation. This includes for instance printing the exact location where the erroneous code is, displaying a caret icon (\textasciicircum) at the exact spot. Also Clang's output is coloured by default making it easier to see what the problem is. Also Clang can represent intervals in the output to show which segment of the code needs changing, along with so-called FixItHints which are little modifications to the code required to fix a certain problem. These can include inserting new code, removing old, and modifying existing.
 \begin{figure}[h]
 	\caption{Clang diagnostic}
 	\includegraphics[scale = 0.4]{images/clang_diag}
@@ -23,5 +23,44 @@
 	\includegraphics[scale = 0.337]{images/gcc_diag}
 \end{figure}
 \par Clang currently supports the vast majority of the newest features of the in-progress C++17 Standard, and fully supports C++98, C++11 and C++14\cite{clang_language_support}. 
+\subsection{Clang Static Analyzer}
+\par This project is built on top of Clang and LLVM and it's a tool for finding bugs in C, C++ and Objective-C code with the use of static analysis. This is a stand alone tool which can be called from the command line and it consists of several modules each checking for different types of bugs in the code.
 \subsection{Clang-tidy}
+\par Clang-tidy is a very similar tool to Clang Static Analyzer but it extends its functionality providing more modules while also being able to run the its checks. It defines itself as "a clang-based C++ “linter” tool"\cite{clang_tidy_mainpage}. It uses Clang's expressive diagnostics to print out warnings to the user and also provides support for FixItHints which can be used to automatically fix and refactor erroneous source code. \medskip
+\par In this thesis I am creating four different modules for Clang-tidy which can potentially improve the execution time of C++ applications. Each module addresses different aspects of coding errors which can be rewritten in a more effective way. 
 \subsection{Abstract syntax tree - AST}
+\par The fundamental bedrock of compiling a programming language is the construction of the abstract syntax tree, which is a tree that represents language specific constructs annotated with all the information what's needed to generate machine code from the source. From now on when I am talking about AST I mean specifically an AST generated from C++ code. \medskip
+\par The AST doesn't contain every syntactic information from the source code, for instance it will not contain semicolons after statements. But will include information about implicit casting of variables, implicit constructor calls, temporary object creation and many other implicitly coded information. 
+
+\begin{lstlisting}[language=c++,frame=single, caption={A simple C++ program}, label={lst:basic_cpp}]
+int main() 
+{
+	int a = 5;
+	int b = a + 4;
+	return b;
+}
+\end{lstlisting}
+\par Comparing a simple program in Listing:\ref{lst:basic_cpp} with the AST generated from it in Listing:\ref{lst:basic_ast} we can observe all the extra information the AST has. We can see implicit casting from lvalue to rvalue, a node for expressing compound statement, a lot of memory addresses, source locations and other meta information about the code.
+\begin{lstlisting}[language=c++,frame=single, caption={AST generated}, style=ast, label={lst:basic_ast}]
+FunctionDecl 0x7fe488 <basic.cpp:1:1, line:5:1> line:1:5 main 'int (void)'
+ `-CompoundStmt 0x7f15c8 <col:12, line:5:1>
+ |-DeclStmt 0x7fe48d <line:2:3, col:12>
+ | `-VarDecl 0x7fe480 <col:3, col:11> col:7 used a 'int' cinit
+ |   `-IntegerLiteral 0x7f1420 <col:11> 'int' 5
+ |-DeclStmt 0x7fe485 <line:3:3, col:16>
+ | `-VarDecl 0x7fe48 <col:3, col:15> col:7 used b 'int' cinit
+ |   `-BinaryOperator 0x7fe48d <col:11, col:15> 'int' '+'
+ |     |-ImplicitCastExpr 0x7fe48d <col:11> 'int' <LValueToRValue>
+ |     | `-DeclRefExpr 0x7fe48d <col:11> 'int' lvalue Var 0x7fe480 'a' 'int'
+ |     `-IntegerLiteral 0x7fe4f8 <col:15> 'int' 4
+  `-ReturnStmt 0x7fe48d <line:4:3, col:10>
+    `-ImplicitCastExpr 0x7fe598 <col:10> 'int' <LValueToRValue>
+      `-DeclRefExpr 0x7fe480 <col:10> 'int' lvalue Var 0x7fe48 'b' 'int'
+\end{lstlisting}
+\par The generated AST can also be represented as a tree graph to make it visually more appealing. This model represent the best how the different nodes are connected together.
+\pagebreak
+\begin{figure}[h]
+	\centering
+	\caption{AST represented as a tree graph}
+	\includegraphics[scale = 0.4]{images/ast_diagram}
+\end{figure}
