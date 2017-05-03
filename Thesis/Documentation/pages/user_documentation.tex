@@ -75,7 +75,50 @@ vec.push_back(1.0);
 std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 \end{lstlisting}
 \subsection{Installing the program}
+Installing the program with the new modules is fairly an easy process, but it varies from operating system to operating system.
 \subsubsection{Windows}
+\par Installing the tool on Microsoft Windows is a little bit more complicated than on simple Linux. There are 2 paths that you can take to set up a Linux environment inside Windows. 
+\paragraph{MinGW}
+\paragraph{WSL}
 \subsubsection{Linux}
+\par Before we start installing the tool on a Linux system, we have to install some basic applications needed to download and compile the program. In the Linux world there are a lot of package manager applications, for instance there is (on default) \verb|apt-get| on Debian-based systems, \verb|Pacman| on Arch Linux-based systems, \verb|rpm| on RedHat-based systems and \verb|Portage| on Gentoo-based systems. To install a package on these different systems use the following commands (supposing one have superuser privileges):
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ apt-get install <package-name>
+user@host:$ pacman -S <package-name>
+user@host:$ yum install <package-name>
+user@host:$ emerge <package-name>
+\end{lstlisting}
+\par From now on, I will show the commands only on Debian-based systems, but translating the given instructions to a different Linux flavour shouldn't be hard. \medskip 
+\par Firstly we have to install subversion(\verb|svn|) on the machine which is a version control system. Also we will need \verb|cmake| which can generate Linux makefiles to make it easy to compile the application. To install them, type:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ sudo apt-get install svn, cmake
+\end{lstlisting}
+\par We need subversion because the LLVM main project and Clang is in an svn repository over the internet. Then we need to clone (download) LLVM first, then clone Clang into the previously cloned LLVM project. Navigate to a comfortable directory where you want your project to reside and clone the repositories:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ cd /directory/where/your/project/should/be
+user@host:$ svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
+user@host:$ cd llvm/tools
+user@host:$ svn co http://llvm.org/svn/llvm-project/cfe/trunk clang
+user@host:$ cd ../..
+\end{lstlisting}
+\par If you are comfortable with the default C++ standard library you can skip the next step, otherwise if you want to use newer libc++ standard library implementation, proceed with the following:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ cd llvm/projects
+user@host:$ svn co http://llvm.org/svn/llvm-project/libcxx/trunk libcxx
+user@host:$ cd ../..
+\end{lstlisting}
+\par Now you have the framework required for the \verb|extra| module. Copy the \verb|extra| directory from the location where the thesis is, to the Clang project:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ cp /dir/to/thesis/location/extra llvm/clang/tools/
+\end{lstlisting}
+\par Now we are ready to compile the whole project. Create a build directory outside of the project structure (in-tree builds are not supported\cite{clang_getting_started}), then generate Unix Makefiles and compile the project. We pass \verb|-DCMAKE_BUILD_TYPE=RELEASE| argument to \verb|cmake| to set it to release build type.
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ mkdir build
+user@host:$ cd build
+user@host:$ cmake -G "Unix Makefiles" ../llvm -DCMAKE_BUILD_TYPE=RELEASE
+user@host:$ make
+\end{lstlisting}
+\par Cmake supports many modern IDEs, see its documentation for different generators\cite{cmake_generator_doc}. \medskip
+\par After the whole project compiled successfully you will find the built executable files in \verb|build/bin| directory.
 \subsubsection{OS X}
 \subsection{Using the program}
