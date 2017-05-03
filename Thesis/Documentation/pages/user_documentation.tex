@@ -3,7 +3,7 @@
 \par The four new modules created for Clang-tidy aim to address four fairy distinctive and inefficient programming patterns. 
 \subsubsection{Inefficient String Concatenation\cite{clang_tidy_string_concat}}
 \par The first problem involves the standard library's string class. This class, more precisely \\\verb|std::basic_string<char>|, is the default implementation of a modifiable high-level character sequence in the language. It provides several functions which can modify, transform the underlying characters. \medskip
-\par The problem arises when one wants to concatenate two or more strings. There are several methods achieving the concatenation: \verb|operator+|, \verb|operator+=| and \verb|.append| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  
+\par The problem arises when one wants to concatenate two or more strings. There are several methods achieving the concatenation: \verb|operator+|, \verb|operator+=| and \verb|.append()| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  
 \begin{lstlisting}[language=c++, frame=single ,caption={Highly inefficient code}, label={lst:ineff_string_concat}]
 std::string a("Foo"), b("Baz");
 for (int i = 0; i < 20000; ++i) 
@@ -19,6 +19,61 @@ for (int i = 0; i < 20000; ++i)
 	a.append("Bar").append(b);
 }
  \end{lstlisting}
+ \par This check doesn't involve a FixItHint because the solution cannot be generalized. 
+ \subsubsection{Inefficient Stream Use}
+ \par The second problem involves the standard library's \verb|operator<<| and \verb|std::ostream|. In C++ you can use 
+\verb|std::cout| to print to the console output, which is really helpful for logging or just this is the way the program communicates with the user, for instance Clang-tidy or Clang itself.\medskip
+\par There are two issues with using the standard way of interaction with the console. First is when using single characters yet annotating them with \verb|""| (double quotes), for example: \verb|"a"|. It's quite inefficient when you put such constructed characters to the stream. Instead one should construct single characters as \verb|'a'|.\medskip \begin{lstlisting}[language=c++, frame=single ,caption={Sightly inefficient way of streaming characters}, label={lst:ineff_stream_pro}]
+std::cout << "a" << "b" << "c";
+\end{lstlisting}
+\begin{lstlisting}[language=c++, frame=single ,caption={A generally more efficient version}, label={lst:ineff_stream_solved}]
+std::cout << 'a' << 'b' << 'c';
+\end{lstlisting}
+\par The other problem which raises more concern about the performance is streaming multiple \\\verb|std::endl| after each other. Unnecessary use of \verb|std::endl| can potentially cause massive performance hogs in an application especially if it's a library which is intended to be used by others. For example the code in Listing:\ref{lst:ineff_stream_prob2} can be rewritten in a highly more efficient form as in Figure:\ref{lst:ineff_stream_solved2}
+\begin{lstlisting}[language=c++, frame=single ,caption={A really slow way to print newlines}, label={lst:ineff_stream_prob2}]
+std::cout << std::endl << std::endl << std::endl;
+\end{lstlisting}
+\begin{lstlisting}[language=c++, frame=single ,caption={A more efficient version}, label={lst:ineff_stream_solved2}]
+std::cout << '\n' << '\n' << std::endl;
+\end{lstlisting}
+\par This check contains FixItHints for correcting the aforementioned issue. It replaces \verb|""| with \verb|''| and also rewrites multiple \verb|std::endl| function calls in a stream, except for the last one. 
+ \subsubsection{Shared Pointer Conversion}
+ \par This problem is relevant to \verb|std::shared_ptr| in the standard library. A \verb|shared_ptr| is a smart pointer, therefore it cannot dangle (point to invalid memory address), which allows other \\\verb|shared_ptr|s to point at the same object as the first pointer, as opposed to \verb|std::unique_ptr| which doesn't allow multiple owners of the object it points to. This makes it slightly more overweight than the \verb|unique_ptr| because each pointer has to know whether it's the last one keeping a reference to the object, and if so when it's destructed it needs to free the resources allocated for the object it points to. \medskip
+ \par Also in C++ the user can define conversions which will allow implicit casting between two types, or with the use of polymorphism a derived class' instance can always be converted to a base class' one. With this casting operation and \verb|shared_ptr|'s way of knowing how many references there are for the object, passing \verb|shared_ptr|s via function arguments where there is implicit (or explicit) casting used is really inefficient in terms of performance. \pagebreak
+ \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient implicit cast}, label={lst:ineff_shared_prob}]
+ class A {};
+ class B : A {};
+ void f(std::shared_ptr<A>){}
+ int main()
+ {
+ 	auto ptr = std::make_shared<B>();
+ 	f(ptr);
+ } 
+\end{lstlisting}
+\par In Listing:\ref{lst:ineff_shared_prob} there is a small example program demonstrating the code which can be greatly improved just by getting the reference of the underlying object of the pointer, as seen in Listing:\ref{lst:ineff_shared_solved}. This program is about 2.5 times faster than the one before. 
+\begin{lstlisting}[language=c++, frame=single ,caption={A much faster version}, label={lst:ineff_shared_solved}]
+class A {};
+class B : A {};
+void f(const A&){}
+int main()
+{
+	auto ptr = std::make_shared<B>();
+	f(*ptr.get());
+}
+\end{lstlisting}
+\par For this check there's no FixItHint option, because there are different ways of refactoring the inefficient structure and if the user accessed the \verb|shared_ptr|'s API then it would be nearly impossible to find a simple automatic solution for refactoring such code. 
+\subsubsection{Default Container Initialization}
+\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initializing containers one can initialize them and add the elements afterwards, which is slightly less efficient than initializing the containers in the expression they are declared.
+\begin{lstlisting}[language=c++, frame=single ,caption={Inefficient way of creating containers}, label={lst:ineff_cont_prob}]
+std::vector<int> vec;
+vec.push_back(3);
+vec.emplace_back(1.2);
+vec.push_back(1.0);
+\end{lstlisting}
+\par As in Listing:\ref{lst:ineff_cont_prob} the initialization of an \verb|std::vector| could be done in a more efficient way, with less lines of code. In Listing:\ref{lst:ineff_cont_solv}  the refactored version needs some explicit conversions to work. 
+\begin{lstlisting}[language=c++, frame=single ,caption={A faster way of initializing}, label={lst:ineff_cont_solv}]
+std::vector<int> vec{3, (int) 1.2, (int) 1.0};
+\end{lstlisting}
 \subsection{Installing the program}
 \subsubsection{Windows}
 \subsubsection{Linux}
