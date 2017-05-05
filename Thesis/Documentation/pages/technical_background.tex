@@ -16,20 +16,21 @@
 \par Clang tries to be as user-friendly as possible with its expressive diagnostic messages emitted during compilation. This includes for instance printing the exact location where the erroneous code is, displaying a caret icon (\textasciicircum) at the exact spot. Also Clang's output is coloured by default making it easier to see what the problem is. Also Clang can represent intervals in the output to show which segment of the code needs changing, along with so-called FixItHints which are little modifications to the code required to fix a certain problem. These can include inserting new code, removing old, and modifying existing.
 \begin{figure}[h]
 	\caption{Clang diagnostic}
-	\includegraphics[scale = 0.4]{images/clang_diag}
+	\includegraphics[scale = 0.42]{images/clang_diag}
 \end{figure}
 \begin{figure}[h]
 	\caption{GCC diagnostic on the same error}
-	\includegraphics[scale = 0.337]{images/gcc_diag}
+	\includegraphics[scale = 0.352]{images/gcc_diag}
 \end{figure}
 \par Clang currently supports the vast majority of the newest features of the in-progress C++17 Standard, and fully supports C++98, C++11 and C++14\cite{clang_language_support}. 
 \subsection{Clang Static Analyzer}
 \par This project is built on top of Clang and LLVM and it's a tool for finding bugs in C, C++ and Objective-C code with the use of static analysis. This is a stand alone tool which can be called from the command line and it consists of several modules each checking for different types of bugs in the code.
 \subsection{Clang-tidy}
 \par Clang-tidy is a very similar tool to Clang Static Analyzer but it extends its functionality providing more modules while also being able to run the its checks. It defines itself as "a clang-based C++ “linter” tool"\cite{clang_tidy_mainpage}. It uses Clang's expressive diagnostics to print out warnings to the user and also provides support for FixItHints which can be used to automatically fix and refactor erroneous source code. \medskip
+\par Clang-tidy also provides access to all the Clang and LLVM framework, making it easy to navigate the abstract syntax tree generated from the C++ code or reading the source-file's text, using the parser to get the next token from a given location for example and also the semantic analyzer functionalities.\medskip
 \par In this thesis I am creating four different modules for Clang-tidy which can potentially improve the execution time of C++ applications. Each module addresses different aspects of coding errors which can be rewritten in a more effective way. 
 \subsection{Abstract syntax tree - AST}
-\par The fundamental bedrock of compiling a programming language is the construction of the abstract syntax tree, which is a tree that represents language specific constructs annotated with all the information what's needed to generate machine code from the source. From now on when I am talking about AST I mean specifically an AST generated from C++ code. \medskip
+\par The fundamental bedrock of compiling a programming language is the construction of a so-called abstract syntax tree, which is a tree that represents language specific constructs annotated with all the information what's needed to generate machine code from the source. From now on when I am talking about AST I mean specifically an AST generated from C++ code. \medskip
 \par The AST doesn't contain every syntactic information from the source code, for instance it will not contain semicolons after statements. But will include information about implicit casting of variables, implicit constructor calls, temporary object creation and many other implicitly coded information. 
 
 \begin{lstlisting}[language=c++,frame=single, caption={A simple C++ program}, label={lst:basic_cpp}]
@@ -41,7 +42,7 @@ int main()
 }
 \end{lstlisting}
 \par Comparing a simple program in Listing:\ref{lst:basic_cpp} with the AST generated from it in Listing:\ref{lst:basic_ast} we can observe all the extra information the AST has. We can see implicit casting from lvalue to rvalue, a node for expressing compound statement, a lot of memory addresses, source locations and other meta information about the code.
-\begin{lstlisting}[language=c++,frame=single, caption={AST generated}, style=ast, label={lst:basic_ast}]
+\begin{lstlisting}[basicstyle=\scriptsize, language=c++,frame=single, caption={AST generated}, style=ast, label={lst:basic_ast}]
 FunctionDecl 0x7fe488 <basic.cpp:1:1, line:5:1> line:1:5 main 'int (void)'
  `-CompoundStmt 0x7f15c8 <col:12, line:5:1>
  |-DeclStmt 0x7fe48d <line:2:3, col:12>
@@ -57,10 +58,18 @@ FunctionDecl 0x7fe488 <basic.cpp:1:1, line:5:1> line:1:5 main 'int (void)'
     `-ImplicitCastExpr 0x7fe598 <col:10> 'int' <LValueToRValue>
       `-DeclRefExpr 0x7fe480 <col:10> 'int' lvalue Var 0x7fe48 'b' 'int'
 \end{lstlisting}
-\par The generated AST can also be represented as a tree graph to make it visually more appealing. This model represent the best how the different nodes are connected together.
-\pagebreak
+\par The generated AST can also be represented as a tree graph to make it visually more appealing. This model represents the best how the different nodes are connected together. \medskip
+\par In Clang the AST nodes are implemented as C++ classes with the proper use of inheritance, so the whole AST follows an object-oriented design, making it much easier to work with. In static analysis, we are primarily try to find the patterns connected to the problematic code, and then traverse the AST looking for these patterns. \medskip
+\par Clang provides numerous so-called AST matchers\cite{ast_reference}, which are structures that can match different predicates on AST nodes. This greatly simplifies how one can traverse and look for a specific code pattern in the tree. 
+\begin{lstlisting}[language=c++,frame=single, caption={Basic AST matchers}, style=ast, label={lst:basic_match}]
+varDecl(matchesName("foo.*"))
+forStmt(hasDescendant(varDecl()))
+declRefExpr(hasDeclaration(varDecl(hasName("foo"))))
+\end{lstlisting}
 \begin{figure}[h]
 	\centering
 	\caption{AST represented as a tree graph}
 	\includegraphics[scale = 0.4]{images/ast_diagram}
-\end{figure}
+\end{figure}\
+\par In Listing:\ref{lst:basic_match} there are some examples of AST matchers.  From the first line descending, a matcher that matches a variable declaration whose name begins with "foo"; for statements which have at least one variable declaration in their body; a "foo" named variable used in some context.
+

@@ -3,7 +3,7 @@
 \par The four new modules created for Clang-tidy aim to address four fairy distinctive and inefficient programming patterns. 
 \subsubsection{Inefficient String Concatenation\cite{clang_tidy_string_concat}}
 \par The first problem involves the standard library's string class. This class, more precisely \\\verb|std::basic_string<char>|, is the default implementation of a modifiable high-level character sequence in the language. It provides several functions which can modify, transform the underlying characters. \medskip
-\par The problem arises when one wants to concatenate two or more strings. There are several methods achieving the concatenation: \verb|operator+|, \verb|operator+=| and \verb|.append()| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  
+\par The problem arises when one wants to concatenate two or more strings. There are several methods achieving the concatenation: \verb|operator+|, \verb|operator+=| and \verb|.append()| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  \\
 \begin{lstlisting}[language=c++, frame=single ,caption={Highly inefficient code}, label={lst:ineff_string_concat}]
 std::string a("Foo"), b("Baz");
 for (int i = 0; i < 20000; ++i) 
@@ -39,7 +39,7 @@ std::cout << '\n' << '\n' << std::endl;
 \par This check contains FixItHints for correcting the aforementioned issue. It replaces \verb|""| with \verb|''| and also rewrites multiple \verb|std::endl| function calls in a stream, except for the last one. 
  \subsubsection{Shared Pointer Conversion}
  \par This problem is relevant to \verb|std::shared_ptr| in the standard library. A \verb|shared_ptr| is a smart pointer, therefore it cannot dangle (point to invalid memory address), which allows other \\\verb|shared_ptr|s to point at the same object as the first pointer, as opposed to \verb|std::unique_ptr| which doesn't allow multiple owners of the object it points to. This makes it slightly more overweight than the \verb|unique_ptr| because each pointer has to know whether it's the last one keeping a reference to the object, and if so when it's destructed it needs to free the resources allocated for the object it points to. \medskip
- \par Also in C++ the user can define conversions which will allow implicit casting between two types, or with the use of polymorphism a derived class' instance can always be converted to a base class' one. With this casting operation and \verb|shared_ptr|'s way of knowing how many references there are for the object, passing \verb|shared_ptr|s via function arguments where there is implicit (or explicit) casting used is really inefficient in terms of performance. \pagebreak
+ \par In C++ where classes are involved with the use of polymorphism a derived class' instance can always be converted to a base class' one. With this casting operation and \verb|shared_ptr|'s way of knowing how many references there are for the object, passing \verb|shared_ptr|s via function arguments where there is implicit (or explicit) casting used is really inefficient in terms of performance. \pagebreak
  \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient implicit cast}, label={lst:ineff_shared_prob}]
  class A {};
  class B : A {};
@@ -63,7 +63,7 @@ int main()
 \end{lstlisting}
 \par For this check there's no FixItHint option, because there are different ways of refactoring the inefficient structure and if the user accessed the \verb|shared_ptr|'s API then it would be nearly impossible to find a simple automatic solution for refactoring such code. 
 \subsubsection{Default Container Initialization}
-\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initializing containers one can initialize them and add the elements afterwards, which is slightly less efficient than initializing the containers in the expression they are declared.
+\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initializing containers one can initialize them and add the elements afterwards, which is slightly less efficient than initializing the containers in the expression they are declared. \\\\\\\\
 \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient way of creating containers}, label={lst:ineff_cont_prob}]
 std::vector<int> vec;
 vec.push_back(3);
@@ -77,10 +77,23 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 \subsection{Installing the program}
 Installing the program with the new modules is fairly an easy process, but it varies from operating system to operating system.
 \subsubsection{Windows}
-\par Installing the tool on Microsoft Windows is a little bit more complicated than on simple Linux. There are 2 paths that you can take to set up a Linux environment inside Windows. 
+\par Installing the tool on Microsoft Windows is a little bit more complicated than on Linux. There are several paths that you can take to set up a Linux environment inside Windows or you can use a native Windows approach. 
 \paragraph{MinGW}
+\paragraph{Cygwin}
 \paragraph{WSL}
-\subsubsection{Linux}
+\subsubsection{OS X}
+\par On macOs (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all because macOs is a Unix type system (its roots are in BSD) working in a Terminal on macOs is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOs doesn't have one out of the box.
+\par We will install the Homebrew\cite{homebrew_homepage} package manager, as this supports the most features and it's the most supported one. Open a terminal and type: 
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+\end{lstlisting}
+\par This will install the whole homebrew system, and after that you will be able to install packages with the \verb|brew install| command. Now you should install Xcode from the AppStore as it will install a lot of useful packages to the system, for instance \verb|gcc|, \verb|ld|, \verb|clang|.
+\par Now we should install the requirements to download LLVM and Clang:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ brew install svn, cmake
+\end{lstlisting}
+\par After successfully installing these applications you can head to the second point of the Linux guide to finalize the installation process.
+\subsubsection{Linux}\label{linux}
 \par Before we start installing the tool on a Linux system, we have to install some basic applications needed to download and compile the program. In the Linux world there are a lot of package manager applications, for instance there is (on default) \verb|apt-get| on Debian-based systems, \verb|Pacman| on Arch Linux-based systems, \verb|rpm| on RedHat-based systems and \verb|Portage| on Gentoo-based systems. To install a package on these different systems use the following commands (supposing one have superuser privileges):
 \begin{lstlisting}[language=bash, frame=single]
 user@host:$ apt-get install <package-name>
@@ -120,5 +133,4 @@ user@host:$ make
 \end{lstlisting}
 \par Cmake supports many modern IDEs, see its documentation for different generators\cite{cmake_generator_doc}. \medskip
 \par After the whole project compiled successfully you will find the built executable files in \verb|build/bin| directory.
-\subsubsection{OS X}
 \subsection{Using the program}
