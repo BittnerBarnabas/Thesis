@@ -9,3 +9,26 @@
 \subsubsection{Inefficient Stream Use Check}
 \subsubsection{Default Container Initialization Check}
 \subsubsection{Polymorphic Shared Pointer Cehck}
+\subsection{Program Structure}
+\par This section covers the abstract structure of the application in Clang-tidy project. The visualization is done with the Unified Modelling Language (UML for short), which is a standard way of representing different logical and physical connections in a computer software. We use UML Class diagrams to visualize the methods and fields of an object, representing also the visibility of these components from the outside of the class.  \medskip
+\par In Figure:\ref{inheritence} we visualize each module's ancestor and how these modules are decoupled from each other.  
+\begin{figure}[H]
+ 	\caption{Inheritence diagram}
+ 	\includegraphics[scale=1]{images/inheritence.pdf}
+ 	\label{inheritence}
+\end{figure}
+\par Every module extends from the \verb|ClangTidyCheck| class, which provides the interface of a Clang-tidy module to create the AST-matchers and also how the matched code should be handled afterwards. First step of adding a new module to Clang-tidy is to inherit from this class and implement the methods, which can be used also to send extra parameters to the checkers themselves.
+\begin{figure}[H]
+	\caption{UML class diagram of Inefficient Stream Use checker}
+	\centering
+	\includegraphics[scale=1.8]{images/InefficientStreamUse.pdf}
+	\label{stream_check_class}
+\end{figure}
+\par In Figure:\ref{stream_check_class} you can observe one of the simplest module's UML Class diagram, which implements the methods declared by \verb|ClangTidyCheck| and also defines one static free function in the source file.
+\begin{figure}[H]
+	\caption{UML class diagram of Container Default Initializer check}
+	\centering
+	\includegraphics[scale=0.85]{images/ContainerDefaultInitializer.pdf}
+	\label{container_init_class}
+\end{figure}
+\par Figure:\ref{container_init_class} represents the abstract structure of the Container Default Initializer check. The solved problem in this module is more complex than the rest hence the increased complexity in the abstract structure. This checker uses several helper functions, and utility classes to store all the meta information about the containers and the conversions taking place in instantiating them. 

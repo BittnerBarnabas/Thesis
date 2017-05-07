@@ -1,1 +1,11 @@
 \section{Testing}
+\par Testing is one of the most important part of developing new software. Without the required quality assurance measures we cannot produce justifiably safe code. Clang-tidy offers an out of the box solution for writing tests for the new modules, which can be run as a separate build task, to support continuous integration of the project. 
+\subsection{Tools for testing}
+\subsubsection{Python}
+\par Python is a multi-paradigm dynamically typed programming language. It can be interpreted line by line and also it has a huge amount of libraries which can extend the language. It's one of the most popular programming languages in the world. It emphasizes code simplicity and in general requires less lines of code to achieve the same result as with C++ for example. \medskip
+\par The aforementioned characteristics of the language makes it perfectly suitable to be a C++ testing suite. Clang-tidy uses numerous of Python scripts, from making it easier to add new checkers to the project to running a custom configured Clang-tidy to all the files in a project. 
+\subsubsection{CMake}
+\par As I have already mentioned previously CMake is a framework for both building and testing applications. In LLVM and its subprojects define several CMake tasks which will run the tests on the project and verify their result and fail the task if one of the tasks failed.
+\subsubsection{FileCheck}
+
+\subsection{Regression tests}

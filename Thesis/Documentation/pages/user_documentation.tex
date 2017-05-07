@@ -39,7 +39,7 @@ std::cout << '\n' << '\n' << std::endl;
 \par This check contains FixItHints for correcting the aforementioned issue. It replaces \verb|""| with \verb|''| and also rewrites multiple \verb|std::endl| function calls in a stream, except for the last one. 
  \subsubsection{Shared Pointer Conversion}
  \par This problem is relevant to \verb|std::shared_ptr| in the standard library. A \verb|shared_ptr| is a smart pointer, therefore it cannot dangle (point to invalid memory address), which allows other \\\verb|shared_ptr|s to point at the same object as the first pointer, as opposed to \verb|std::unique_ptr| which doesn't allow multiple owners of the object it points to. This makes it slightly more overweight than the \verb|unique_ptr| because each pointer has to know whether it's the last one keeping a reference to the object, and if so when it's destructed it needs to free the resources allocated for the object it points to. \medskip
- \par In C++ where classes are involved with the use of polymorphism a derived class' instance can always be converted to a base class' one. With this casting operation and \verb|shared_ptr|'s way of knowing how many references there are for the object, passing \verb|shared_ptr|s via function arguments where there is implicit (or explicit) casting used is really inefficient in terms of performance. \pagebreak
+ \par In C++ where classes are involved with the use of polymorphism a derived class' instance can always be converted to a base class' one. With this casting operation and \verb|shared_ptr|'s way of knowing how many references there are for the object, passing \verb|shared_ptr|s via function arguments where there is implicit (or explicit) casting used is really inefficient in terms of performance. \medskip
  \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient implicit cast}, label={lst:ineff_shared_prob}]
  class A {};
  class B : A {};
@@ -63,7 +63,7 @@ int main()
 \end{lstlisting}
 \par For this check there's no FixItHint option, because there are different ways of refactoring the inefficient structure and if the user accessed the \verb|shared_ptr|'s API then it would be nearly impossible to find a simple automatic solution for refactoring such code. 
 \subsubsection{Default Container Initialization}
-\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initializing containers one can initialize them and add the elements afterwards, which is slightly less efficient than initializing the containers in the expression they are declared. \\\\\\\\
+\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initializing containers one can initialize them and add the elements afterwards, which is slightly less efficient than initializing the containers in the expression they are declared. \medskip
 \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient way of creating containers}, label={lst:ineff_cont_prob}]
 std::vector<int> vec;
 vec.push_back(3);
@@ -78,9 +78,20 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 Installing the program with the new modules is fairly an easy process, but it varies from operating system to operating system.
 \subsubsection{Windows}
 \par Installing the tool on Microsoft Windows is a little bit more complicated than on Linux. There are several paths that you can take to set up a Linux environment inside Windows or you can use a native Windows approach. 
-\paragraph{MinGW}
+\paragraph{MinGW} is a project for Windows which aims to provide a minimalist GNU development environment\cite{mingw_homepage}. This project doesn't aim to provide a POSIX runtime environment\cite{mingw_homepage}, but wants to simplify how one can use the C runtime Microsoft provides and other language runtimes. \medskip
+\par MinGW currently features the following applications:
+\begin{enumerate}
+	\item A GNU Compiler (\verb|gcc|) port for Windows
+	\item GNU Binutils which contains a set of utility programs
+	\item MSYS(Optional)
+\end{enumerate}
+\par MSYS is a collection of different utility programs from GNU project. It's an optional complementary designed for MingGW\cite{mysis_page}. Its goal is to simplify interacting with UNIX tools, and also to provide a better command-line terminal application for Windows by providing Bash. \medskip
+\par To install the program with MinGW, first you have to download the latest MinGW runtime from the original site: \url{http://www.mingw.org/}.
 \paragraph{Cygwin}
+\par An other option to installation is using Cygwin which is an environment aiming at creating a POSIX compatible layer in Windows. 
 \paragraph{WSL}
+\par also known as Windows Subsystem for Linux is an optional feature from Microsoft on Windows 10 Desktop operating systems. The subsystem enables the execution of native \verb|ELF64| binaries\cite{wsl_overview} on Windows, without a need of a virtual machine or third party layer. 
+\par WSL works by using a so-called Pico process which was developed at Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native linux application while mapping all the linux kernel calls to NT kernel calls hence providing the seamless functionality. 
 \subsubsection{OS X}
 \par On macOs (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all because macOs is a Unix type system (its roots are in BSD) working in a Terminal on macOs is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOs doesn't have one out of the box.
 \par We will install the Homebrew\cite{homebrew_homepage} package manager, as this supports the most features and it's the most supported one. Open a terminal and type: 
