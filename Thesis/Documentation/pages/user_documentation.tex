@@ -86,12 +86,14 @@ Installing the program with the new modules is fairly an easy process, but it va
 	\item MSYS(Optional)
 \end{enumerate}
 \par MSYS is a collection of different utility programs from GNU project. It's an optional complementary designed for MingGW\cite{mysis_page}. Its goal is to simplify interacting with UNIX tools, and also to provide a better command-line terminal application for Windows by providing Bash. \medskip
-\par To install the program with MinGW, first you have to download the latest MinGW runtime from the original site: \url{http://www.mingw.org/}.
+\par To install the program with MinGW, first you have to download the latest MinGW runtime from the original site: \url{http://www.mingw.org/}. Following this guide one should be able to install MinGW, MSYS, subversion and cmake on their Windows PC: \url{http://ingar.satgnu.net/devenv/mingw32/base.html}. \medskip
+\par With these tools you can continue with the second step of linux installation guide, following the steps carefully. \medskip
 \paragraph{Cygwin}
-\par An other option to installation is using Cygwin which is an environment aiming at creating a POSIX compatible layer in Windows. 
+\par An other option to installation is using Cygwin which is an environment aiming at creating a POSIX compatible layer in Windows. \medskip
 \paragraph{WSL}
-\par also known as Windows Subsystem for Linux is an optional feature from Microsoft on Windows 10 Desktop operating systems. The subsystem enables the execution of native \verb|ELF64| binaries\cite{wsl_overview} on Windows, without a need of a virtual machine or third party layer. 
+\par also known as Windows Subsystem for Linux is an optional feature from Microsoft on Windows 10 Desktop operating systems. The subsystem enables the execution of native \verb|ELF64| binaries\cite{wsl_overview} on Windows, without a need of a virtual machine or third party layer. \medskip
 \par WSL works by using a so-called Pico process which was developed at Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native linux application while mapping all the linux kernel calls to NT kernel calls hence providing the seamless functionality. 
+\par 
 \subsubsection{OS X}
 \par On macOs (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all because macOs is a Unix type system (its roots are in BSD) working in a Terminal on macOs is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOs doesn't have one out of the box.
 \par We will install the Homebrew\cite{homebrew_homepage} package manager, as this supports the most features and it's the most supported one. Open a terminal and type: 
@@ -145,3 +147,8 @@ user@host:$ make
 \par Cmake supports many modern IDEs, see its documentation for different generators\cite{cmake_generator_doc}. \medskip
 \par After the whole project compiled successfully you will find the built executable files in \verb|build/bin| directory.
 \subsection{Using the program}
+\par After the program has been successfully installed on the given system we can begin using it to run the modules on distinct C++ files or on whole projects. 
+\subsubsection{CLI}
+\par When it comes to running the application from the command line, its important to distinguish running the tool on different, standalone source-files and running the tool on a whole C++ project. \medskip
+\par To run the tool on a 
+\subsubsection{GUI}

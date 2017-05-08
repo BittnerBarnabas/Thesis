@@ -4,6 +4,14 @@
 \subsubsection{Inefficient Stream Use Check}
 \subsubsection{Default Container Initialization Check}
 \subsubsection{Polymorphic Shared Pointer Cehck}
+\par Accoring to the C++ standard the \verb|memory| header has to contain a templated class \verb|shared_ptr| with the signature \verb|template<class T> class shared_ptr|\cite[\S20.8.2.2]{cpp_standard} \medskip
+\par This class is responsible for storing a standard C++ pointer and implementing shared ownership of this raw pointer. This means that the last \verb|shared_ptr| object is responsible for the destruction of the underlying pointer. \medskip
+\par The standard also specifies that the \verb|shared_ptr| class must have a constructor with \\
+\verb|template<class Y> shared_ptr(const shared_ptr<Y>& r, T* p) noexcept;|\\ \cite[\S20.8.2.2.1]{cpp_standard}
+signature which should be eligible for overload resolution if and only  if \verb|T*| is convertible to \verb|Y*|. \medskip
+\par The way \verb|shared_ptr| achieves the shared ownership is by a class-wide static variable (\verb|use_count()|) which is incremented in each construction and decremented in each destruction and if \verb|use_count()|  reaches zero in a destruction then the underlying pointer shall be destroyed either by default \verb|delete| keyword or by a user-supplied custom deleter. The modification of the reference count has to be an atomic process and should not be modified simultaneously\cite[\S20.8.2.2 4.]{cpp_standard}. \medskip
+\par These properties could make the \verb|shared_ptr| a hidden source of performance hogs when implicit temporary object creation is involved.  Such as the case when inherit is involved. \medskip
+\par The standard says that a pointer to a derived class shall always be implicit convertible to a pointer to the base class\cite[\S4.10 3.]{cpp_standard}. This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous.
 \subsection{Implementations}
 \subsubsection{Inefficient String Concatenation Check}
 \subsubsection{Inefficient Stream Use Check}
@@ -32,3 +40,17 @@
 	\label{container_init_class}
 \end{figure}
 \par Figure:\ref{container_init_class} represents the abstract structure of the Container Default Initializer check. The solved problem in this module is more complex than the rest hence the increased complexity in the abstract structure. This checker uses several helper functions, and utility classes to store all the meta information about the containers and the conversions taking place in instantiating them. 
+\begin{figure}[H]
+	\caption{UML class diagram of Inefficient String Concatenation check}
+	\centering
+	\includegraphics[scale=1.8]{images/InefficientStringConcatenation.pdf}
+	\label{string_concat_check}
+\end{figure}
+\par The next module's architecture is fairly simple again, as seen in Figure:\ref{string_concat_check}. It consists of the basic interface of a Clang-tidy checker, but it uses a new method \verb|storeOptions| to be able to receive a passed parameter, and modify its behaviour accordingly. 
+\begin{figure}[H]
+	\caption{UML class diagram of Inefficient Shared Pointer check}
+	\centering
+	\includegraphics[scale=1.8]{images/InefficientSharedPtr.pdf}
+	\label{shared_ptr_check}
+\end{figure}
+\par In Figure:\ref{shared_ptr_check} you can inspect the structure of the Inefficient Shared Pointer checker which declares two extra static methods for retrieving extra information about the matched nodes. 
