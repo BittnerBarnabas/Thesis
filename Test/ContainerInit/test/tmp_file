@@ -1,0 +1,9 @@
+/Users/barni/Documents/Thesis/llvm/lib/IR/IRBuilder.cpp:337:3: warning: Initialize containers in place if you can [performance-container-default-initializer]
+  std::vector<Value *> Args;
+  ^
+                           {B.getInt32(NumPatchBytes)}
+Enabled checks:
+    performance-container-default-initializer
+
+
+clang-tidy -header-filter=^/Users/barni/Documents/Thesis/Thesis/Test/ContainerInit/test/.* -checks=-*,performance-container-default-initializer -p=/Users/barni/Documents/Thesis/Thesis/Test/ContainerInit/test /Users/barni/Documents/Thesis/llvm/lib/IR/IRBuilder.cpp

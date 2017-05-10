@@ -1,0 +1,5 @@
+[{
+          "directory": "/Users/barni/Documents/Thesis/llvm/cmake-build-release/lib/IR",
+            "command": "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++   -DGTEST_HAS_RTTI=0 -DLLVM_BUILD_GLOBAL_ISEL -D_DEBUG -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -I/Users/barni/Documents/Thesis/llvm/cmake-build-release/lib/IR -I/Users/barni/Documents/Thesis/llvm/lib/IR -I/Users/barni/Documents/Thesis/llvm/cmake-build-release/include -I/Users/barni/Documents/Thesis/llvm/include   -fPIC -fvisibility-inlines-hidden -Wall -W -Wno-unused-parameter -Wwrite-strings -Wcast-qual -Wmissing-field-initializers -pedantic -Wno-long-long -Wcovered-switch-default -Wnon-virtual-dtor -Wdelete-non-virtual-dtor -Wstring-conversion -Werror=date-time -std=c++11 -O3    -UNDEBUG  -fno-exceptions -fno-rtti -o CMakeFiles/LLVMCore.dir/IRBuilder.cpp.o -c /Users/barni/Documents/Thesis/llvm/lib/IR/IRBuilder.cpp",
+              "file": "/Users/barni/Documents/Thesis/llvm/lib/IR/IRBuilder.cpp"
+}]

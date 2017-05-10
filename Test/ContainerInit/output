@@ -1,0 +1,110 @@
+{
+    std::vector<short int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<unsigned short int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<unsigned int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<long int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<unsigned long int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<long long int > vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<unsigned long long int> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<float> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
+{
+    std::vector<double> vec1;
+    vec1.push_back(shortInt);
+    vec1.emplace_back(uShortInt);
+    vec1.push_back(Int);
+    vec1.emplace_back(uInt);
+    vec1.push_back(longInt);
+    vec1.push_back(uLongInt);
+    vec1.push_back(longLongInt);
+    vec1.emplace_back(uLongLongInt);
+  }
