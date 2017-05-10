@@ -1,17 +1,27 @@
 \section{Developer documentation}
 \subsection{Detailed description of the solved problems}
+\par In this section I am going to present the technical background of the solved problems. I am referencing the \verb|N4567|\cite{cpp_standard} version Working Draft of the C++ standard, which contains every C++14 features and also freely available. 
 \subsubsection{Inefficient String Concatenation Check}
 \subsubsection{Inefficient Stream Use Check}
 \subsubsection{Default Container Initialization Check}
 \subsubsection{Polymorphic Shared Pointer Cehck}
 \par Accoring to the C++ standard the \verb|memory| header has to contain a templated class \verb|shared_ptr| with the signature \verb|template<class T> class shared_ptr|\cite[\S20.8.2.2]{cpp_standard} \medskip
 \par This class is responsible for storing a standard C++ pointer and implementing shared ownership of this raw pointer. This means that the last \verb|shared_ptr| object is responsible for the destruction of the underlying pointer. \medskip
-\par The standard also specifies that the \verb|shared_ptr| class must have a constructor with \\
-\verb|template<class Y> shared_ptr(const shared_ptr<Y>& r, T* p) noexcept;|\\ \cite[\S20.8.2.2.1]{cpp_standard}
-signature which should be eligible for overload resolution if and only  if \verb|T*| is convertible to \verb|Y*|. \medskip
 \par The way \verb|shared_ptr| achieves the shared ownership is by a class-wide static variable (\verb|use_count()|) which is incremented in each construction and decremented in each destruction and if \verb|use_count()|  reaches zero in a destruction then the underlying pointer shall be destroyed either by default \verb|delete| keyword or by a user-supplied custom deleter. The modification of the reference count has to be an atomic process and should not be modified simultaneously\cite[\S20.8.2.2 4.]{cpp_standard}. \medskip
-\par These properties could make the \verb|shared_ptr| a hidden source of performance hogs when implicit temporary object creation is involved.  Such as the case when inherit is involved. \medskip
-\par The standard says that a pointer to a derived class shall always be implicit convertible to a pointer to the base class\cite[\S4.10 3.]{cpp_standard}. This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous.
+\par These properties could make the \verb|shared_ptr| a hidden source of performance hogs when implicit temporary object creation is involved.  Such as the case when inherit is used. \medskip
+\par The standard says that a pointer to a derived class shall always be implicit convertible to a pointer to the base class\cite[\S4.10 3.]{cpp_standard}. Also in C++ objects generated  by template instantiations are not covariant, they are invariant in fact, meaning there is no implicit conversion in this example, but a compile time error:
+ \begin{lstlisting}[language=c++, frame=single]
+struct A {}; struct B : A {};
+std::vector<B*> vec1;
+std::vector<A*> vec2;
+vec2 = vec1;
+\end{lstlisting}
+\par Yet to make \verb|shared_ptr<A>| covariant, to preserve to resemblence to a raw pointer, the standard defines constructors with signature 
+\\ \verb|template<class Y> shared_ptr(const shared_ptr<Y>& r) noexcept;|\\ 
+\verb|template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;| \\
+\cite[\S20.8.2.2.1]{cpp_standard}
+ which should be eligible for overload resolution if and only  if \verb|T*| is convertible to \verb|Y*|. \medskip
+ \par This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous. But this conversion is costly, because of the reference counting, which in this case decrements the reference count in \verb|shared_ptr<Derived>| and increments in \verb|shared_ptr<Base>|. This incrementing, decrementing is unnecessary and resource consuming.
 \subsection{Implementations}
 \subsubsection{Inefficient String Concatenation Check}
 \subsubsection{Inefficient Stream Use Check}
