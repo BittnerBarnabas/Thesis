@@ -19,7 +19,7 @@ for (int i = 0; i < 20000; ++i)
 	a.append("Bar").append(b);
 }
  \end{lstlisting}
- \par This check doesn't involve a FixItHint because the solution cannot be generalized. 
+ \par This check doesn't involve a FixItHint because the solution cannot be generalised 
  \subsubsection{Inefficient Stream Use}
  \par The second problem involves the standard library's \verb|operator<<| and \verb|std::ostream|. In C++ you can use 
 \verb|std::cout| to print to the console output, which is really helpful for logging or just this is the way the program communicates with the user, for instance Clang-tidy or Clang itself.\medskip
@@ -63,15 +63,15 @@ int main()
 \end{lstlisting}
 \par For this check there's no FixItHint option, because there are different ways of refactoring the inefficient structure and if the user accessed the \verb|shared_ptr|'s API then it would be nearly impossible to find a simple automatic solution for refactoring such code. 
 \subsubsection{Default Container Initialization}
-\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initializing containers one can initialize them and add the elements afterwards, which is slightly less efficient than initializing the containers in the expression they are declared. \medskip
+\par The last problematic code pattern addressed involves the standard library's default containers, namely \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. In C++ when initialising containers one can initialise them and add the elements afterwards, which is slightly less efficient than initialising the containers in the expression they are declared. \medskip
 \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient way of creating containers}, label={lst:ineff_cont_prob}]
 std::vector<int> vec;
 vec.push_back(3);
 vec.emplace_back(1.2);
 vec.push_back(1.0);
 \end{lstlisting}
-\par As in Listing:\ref{lst:ineff_cont_prob} the initialization of an \verb|std::vector| could be done in a more efficient way, with less lines of code. In Listing:\ref{lst:ineff_cont_solv}  the refactored version needs some explicit conversions to work. 
-\begin{lstlisting}[language=c++, frame=single ,caption={A faster way of initializing}, label={lst:ineff_cont_solv}]
+\par As in Listing:\ref{lst:ineff_cont_prob} the Initialization of an \verb|std::vector| could be done in a more efficient way, with less lines of code. In Listing:\ref{lst:ineff_cont_solv}  the refactored version needs some explicit conversions to work. 
+\begin{lstlisting}[language=c++, frame=single ,caption={A faster way of initialising}, label={lst:ineff_cont_solv}]
 std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 \end{lstlisting}
 \subsection{Performance benchmarks}
@@ -90,9 +90,9 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 	\includegraphics[scale=0.7]{images/string_concat.pdf}
 \end{figure}
 \subsubsection{Container Default Initialization}
-\par Benchmarking code that used an inefficient way of initializing an \verb|std::vector| on which the check was run with FixItHints enabled, the automatic refactoring provided a much faster code than the original one. Fitting lines on both samples gives us $y=0.007635x+0.0038$ line for the original and $y=0.002486x+0.0046$ for the refactored one, resulting in a 3 times faster code.
+\par Benchmarking code that used an inefficient way of initialising an \verb|std::vector| on which the check was run with FixItHints enabled, the automatic refactoring provided a much faster code than the original one. Fitting lines on both samples gives us $y=0.007635x+0.0038$ line for the original and $y=0.002486x+0.0046$ for the refactored one, resulting in a 3 times faster code.
 \begin{figure}[H]
-	\caption{Container initialization benchmark}
+	\caption{Container Initialization benchmark}
 	\includegraphics[scale=0.7]{images/container_init_performance.pdf}
 \end{figure}
 \subsubsection{Inefficient Stream Use}
@@ -104,14 +104,14 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 \end{figure}
 \par The other type of tests were conducted on using multiple \verb|std::endl| on a single stream. The correction of this problem was also automatic, and the results show a 2 times increase in performance after applying the FixItHints. Fitting lines to the original gives a $y=0.01758x+0.059$ and a $y=0.008256x+0.001$ on the refactored. 
 \begin{figure}[H]
-	\caption{Multiple endline benchmark}
+	\caption{Multiple end-line benchmark}
 	\includegraphics[scale=0.7]{images/stream_endline_performance.pdf}
 \end{figure}
 \subsection{Installing the program}
 Installing the program with the new modules is fairly an easy process, but it varies from operating system to operating system.
 \subsubsection{Windows}
 \par Installing the tool on Microsoft Windows is a little bit more complicated than on Linux. There are several paths that you can take to set up a Linux environment inside Windows or you can use a native Windows approach. 
-\paragraph{MinGW} is a project for Windows which aims to provide a minimalist GNU development environment\cite{mingw_homepage}. This project doesn't aim to provide a POSIX runtime environment\cite{mingw_homepage}, but wants to simplify how one can use the C runtime Microsoft provides and other language runtimes. \medskip
+\paragraph{MinGW} is a project for Windows which aims to provide a minimalist GNU development environment\cite{mingw_homepage}. This project doesn't aim to provide a POSIX run-time environment\cite{mingw_homepage}, but wants to simplify how one can use the C run-time Microsoft provides and other language run-times \medskip
 \par MinGW currently features the following applications:
 \begin{enumerate}
 	\item A GNU Compiler (\verb|gcc|) port for Windows
@@ -119,13 +119,13 @@ Installing the program with the new modules is fairly an easy process, but it va
 	\item MSYS(Optional)
 \end{enumerate}
 \par MSYS is a collection of different utility programs from GNU project. It's an optional complementary designed for MingGW\cite{mysis_page}. Its goal is to simplify interacting with UNIX tools, and also to provide a better command-line terminal application for Windows by providing Bash. \medskip
-\par To install the program with MinGW, first you have to download the latest MinGW runtime from the original site: \url{http://www.mingw.org/}. Following this guide one should be able to install MinGW, MSYS, subversion and cmake on their Windows PC: \url{http://ingar.satgnu.net/devenv/mingw32/base.html}. \medskip
-\par With these tools you can continue with the second step of linux installation guide, following the steps carefully. \medskip
+\par To install the program with MinGW, first you have to download the latest MinGW run-time from the original site: \url{http://www.mingw.org/}. Following this guide one should be able to install MinGW, MSYS, subversion and cmake on their Windows PC: \url{http://ingar.satgnu.net/devenv/mingw32/base.html}. \medskip
+\par With these tools you can continue with the second step of Linux installation guide, following the steps carefully. \medskip
 \paragraph{Cygwin}
 \par An other option to installation is using Cygwin which is an environment aiming at creating a POSIX compatible layer in Windows. \medskip
 \paragraph{WSL}
 \par also known as Windows Subsystem for Linux is an optional feature from Microsoft on Windows 10 Desktop operating systems. The subsystem enables the execution of native \verb|ELF64| binaries\cite{wsl_overview} on Windows, without a need of a virtual machine or third party layer. \medskip
-\par WSL works by using a so-called Pico process which was developed at Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native linux application while mapping all the linux kernel calls to NT kernel calls hence providing the seamless functionality. 
+\par WSL works by using a so-called Pico process which was developed at Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native Linux application while mapping all the Linux kernel calls to NT kernel calls hence providing the seamless functionality. 
 \par 
 \subsubsection{OS X}
 \par On macOs (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all because macOs is a Unix type system (its roots are in BSD) working in a Terminal on macOs is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOs doesn't have one out of the box.
@@ -138,7 +138,7 @@ user@host:$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/ins
 \begin{lstlisting}[language=bash, frame=single]
 user@host:$ brew install svn, cmake
 \end{lstlisting}
-\par After successfully installing these applications you can head to the second point of the Linux guide to finalize the installation process.
+\par After successfully installing these applications you can head to the second point of the Linux guide to finalise the installation process.
 \subsubsection{Linux}\label{linux}
 \par Before we start installing the tool on a Linux system, we have to install some basic applications needed to download and compile the program. In the Linux world there are a lot of package manager applications, for instance there is (on default) \verb|apt-get| on Debian-based systems, \verb|Pacman| on Arch Linux-based systems, \verb|rpm| on RedHat-based systems and \verb|Portage| on Gentoo-based systems. To install a package on these different systems use the following commands (supposing one have superuser privileges):
 \begin{lstlisting}[language=bash, frame=single]
@@ -182,6 +182,31 @@ user@host:$ make
 \subsection{Using the program}
 \par After the program has been successfully installed on the given system we can begin using it to run the modules on distinct C++ files or on whole projects. 
 \subsubsection{CLI}
-\par When it comes to running the application from the command line, its important to distinguish running the tool on different, standalone source-files and running the tool on a whole C++ project. \medskip
-\par To run the tool on a 
+\par When it comes to running the application from the command line, its important to distinguish running the tool on different, standalone source-files and on a whole C++ project. \medskip
+\par Running on standalone source files is the easiest method when only couple of files are involved which don't require any other library to compile. To run with the default checks enabled on a file named \verb|source.cpp|:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ clang-tidy ./source.cpp
+\end{lstlisting}
+\par If you want to specify which checks should be used when analysing you can use the \verb|-checks=| flag, and after that you can use the checker name to add, and a \verb|-| checker name to exclude. You can use \verb|*| to refer to all the checks:
+ \begin{lstlisting}[language=bash, frame=single]
+ user@host:$ clang-tidy -checks=-*,performance-inefficient-stream-use ./source.cpp
+ \end{lstlisting}
+ \par This runs only the Inefficient String Use check. If you need to pass arguments to the compiler behind Clang-tidy you can use the \verb|--| flag and then just pass the arguments. For instance this code will run Clang-tidy with the default checks enabled, passing \verb|-std=c++14| argument to the compiler:
+ \begin{lstlisting}[language=bash, frame=single]
+ user@host:$ clang-tidy ./source.cpp -- -std=c++14
+ \end{lstlisting}
+ \par To specifically run the four modules involved in this thesis you can pass these arguments to \verb|-checks| parameter:
+ \begin{itemize}
+ 	\item \verb|performance-inefficient-shared-pointer-reference|
+ 	\item \verb|performance-inefficient-stream-use|
+ 	\item \verb|performance-inefficient-string-concatenation|
+ 	\item \verb|performance-container-default-initializer|
+ \end{itemize}
+\par There are several options running the tool on a whole project. The fundamental principle to run the tool on multiple files, is to have a JSON Compilation database, which is "a format for specifying how to replay single compilations independently of the build system"\cite{compilation_db}. 
+\par Generating a JSON Compilation database can be done several ways: 
+\begin{itemize}
+	\item using \verb|cmake| and passing \verb|-DCMAKE_EXPORT_COMPILE_COMMANDS=ON|
+	\item with Ninja build system's \verb|compdb| tool\cite{ninja_build_system}
+	\item since version 4.0.0 Clang supports generating it with \verb|-MJ| argument\cite{clang_release_notes}
+\end{itemize}
 \subsubsection{GUI}

@@ -1,10 +1,20 @@
 \section{Developer documentation}
 \subsection{Detailed description of the solved problems}
-\par In this section I am going to present the technical background of the solved problems. I am referencing the \verb|N4567|\cite{cpp_standard} version Working Draft of the C++ standard, which contains every C++14 features and also freely available. 
+\par In this section I am going to present the technical background of the mentioned problems, why they are inefficient and what can we do to refactor them. I am referencing the \verb|N4567|\cite{cpp_standard} version Working Draft of the C++ standard, which contains every C++14 features and also freely available. 
 \subsubsection{Inefficient String Concatenation Check}
 \subsubsection{Inefficient Stream Use Check}
 \subsubsection{Default Container Initialization Check}
-\subsubsection{Polymorphic Shared Pointer Cehck}
+\par The C++ standard defines some standard containers which are able to hold collections of objects. The containers which are defined and we are interested in are: \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. To put elements in these containers one can define them with the default constructor and later add elements one by one with insertion operations. \medskip
+\par Each insertion is a call of a member method for instance \verb|push_back()|, \verb|insert()| and \verb|emplace_back()|. To use these methods right after creating the container is inefficient, because the standard mentions that every mentioned container must have a constructor which takes an initializer list as an argument:
+\begin{itemize}
+	\item \verb|vector(initializer_list<T>, const Allocator& = Allocator());| where \verb|T| is the Type of the objects in the container \cite[\S23.3.6.2]{cpp_standard}
+	\item \verb|map(initializer_list<value_type>...);| where \verb|value_type| is a pair of the key and value type of the \verb|map| \cite[\S23.4.4.2]{cpp_standard}
+	\item \verb|set(initializer_list<value_type>...);| where \verb|value_type| is the type of the \verb|set|'s key \cite[\S23.4.6.2]{cpp_standard}
+	\item \verb|deque(initializer_list<T>, const Allocator& = Allocator());| where \verb|T| is the Type of the objects in the container\cite[\S23.3.3.2]{cpp_standard}
+\end{itemize}
+\par The more efficient form would be list-initializing the containers in place with the declaration by passing an \verb|initializer_list| to the constructor. But the list-initialization raises concerns when implicit casting is involved. The standard states "If a narrowing conversion \dots is required to convert any of the arguments, the program is ill-formed"\cite[\S8.5.4 3.6]{cpp_standard}. \medskip
+\par A narrowing conversion is an implicit conversion of numerical types where there is possibility of over- or underflow when converting to the destination type. For a more detailed description see \cite[\S8.5.4 7]{cpp_standard}. To remove implicit narrowing conversions we need to introduce explicit casting. This checker uses C-style casts, which in the future should be replaced with a safer \verb|static_cast|.
+\subsubsection{Shared Pointer Conversion Check}
 \par Accoring to the C++ standard the \verb|memory| header has to contain a templated class \verb|shared_ptr| with the signature \verb|template<class T> class shared_ptr|\cite[\S20.8.2.2]{cpp_standard} \medskip
 \par This class is responsible for storing a standard C++ pointer and implementing shared ownership of this raw pointer. This means that the last \verb|shared_ptr| object is responsible for the destruction of the underlying pointer. \medskip
 \par The way \verb|shared_ptr| achieves the shared ownership is by a class-wide static variable (\verb|use_count()|) which is incremented in each construction and decremented in each destruction and if \verb|use_count()|  reaches zero in a destruction then the underlying pointer shall be destroyed either by default \verb|delete| keyword or by a user-supplied custom deleter. The modification of the reference count has to be an atomic process and should not be modified simultaneously\cite[\S20.8.2.2 4.]{cpp_standard}. \medskip
@@ -21,12 +31,13 @@ vec2 = vec1;
 \verb|template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;| \\
 \cite[\S20.8.2.2.1]{cpp_standard}
  which should be eligible for overload resolution if and only  if \verb|T*| is convertible to \verb|Y*|. \medskip
- \par This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous. But this conversion is costly, because of the reference counting, which in this case decrements the reference count in \verb|shared_ptr<Derived>| and increments in \verb|shared_ptr<Base>|. This incrementing, decrementing is unnecessary and resource consuming.
+ \par This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous. But this conversion is costly, because of the reference counting, which in this case decrements the reference count in \verb|shared_ptr<Derived>| and increments in \verb|shared_ptr<Base>|. This incrementing, decrementing is unnecessary and resource consuming. \medskip
+ \par To solve this problem, the easiest method is to refactor the function which expects a \verb|shared_ptr<Base>|, to expect a \verb|const Base&| or \verb|const B*| and call the function with either \verb|*ptr.get()| or \verb|ptr.get()|.
 \subsection{Implementations}
 \subsubsection{Inefficient String Concatenation Check}
 \subsubsection{Inefficient Stream Use Check}
 \subsubsection{Default Container Initialization Check}
-\subsubsection{Polymorphic Shared Pointer Cehck}
+\subsubsection{Shared Pointer Conversion Check}
 \subsection{Program Structure}
 \par This section covers the abstract structure of the application in Clang-tidy project. The visualization is done with the Unified Modelling Language (UML for short), which is a standard way of representing different logical and physical connections in a computer software. We use UML Class diagrams to visualize the methods and fields of an object, representing also the visibility of these components from the outside of the class.  \medskip
 \par In Figure:\ref{inheritence} we visualize each module's ancestor and how these modules are decoupled from each other.  
