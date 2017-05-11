@@ -7,5 +7,41 @@
 \subsubsection{CMake}
 \par As I have already mentioned previously CMake is a framework for both building and testing applications. In LLVM and its subprojects define several CMake tasks which will run the tests on the project and verify their result and fail the task if one of the tasks failed.
 \subsubsection{FileCheck}
-
+\par FileCheck is a utility script in Clang project which simplifies the testing of tools that need to emit some sort of an output\cite{filecheck_docs}. In Clang-tidy this tool is used to verify that the tool, run on a test-file, produces the expected output, as well as the expected FixItHints were applied to the file. \medskip
+\par Along with \verb|check_clang_tidy.py| which is a driver for FileCheck, their responsibility is to ensure that every test-file is executed and all the expectations are met. The \verb|check_clang_tidy.py| is executed as part of the \verb|check-clang-tools| CMake process. \medskip
+\par The assertions are annotated as C++ comments, with prefixes that are Clang-tidy specific (\verb|CHECK-FIXES, CHECK-MESSAGES|). To verify an output message, a diagnostic output for instance, one can use the \verb|CHECK-MESSAGES| command, which must be parameterized with line and row numbers of the exact position of the expected message, for instance \verb|CHECK-MESSAGES: :[[@LINE-1]]:2: warning: message|\\ means that we are expecting "warning: message" diagnostic message to be emitted at the second column at the line before the current line. This way we can pinpoint the location of the emitted messages. \medskip
+\par FileCheck also supports regular expressions inside the validation code inside \verb|{{ }}|. If the code to match contains \verb|{{| one can use \verb|{{[{][{]}}| to escape the bracket characters. Using regular expressions is especially useful when validating applied FixItHints for making the expected string more concise and ignore possible platform dependent whitespace issues.
 \subsection{Regression tests}
+\par The structural stability and validity of the implemented modules were tested with the help of regression tests. These consist of single files that contain several code snippets with the problematic code patterns present and also in absence of such code to minimise accidental false-positive fixes or warning messages.
+\par Testing and validating Clang-tidy modules can be a challenging process and has to be taken with care to decrease the number of possible false positive matches or wrong FixItHints which can break the further compilation of the file or whole project. 
+\subsubsection{Testing templated code}
+\par The problem with C++ templates is that the compiler creates distinct functions or classes depending on the template parameters, before the Abstract Syntax Tree is built. The result is having the same problematic code pattern multiple times in the AST, and having each templated instantiation with the same location information as the original one. \medskip
+\par This means that if we naively match the AST not checking whether it's a template instantiation that we are matching, we can correct the code multiple times each pointing to the original template declaration. This can result in undeterministic FixItHints which point to the same source location with different content.  \pagebreak
+\par Outlining such a scenario as a motivating example: 
+\begin{lstlisting}[language=c++, frame=single]
+template<int N>
+struct A{
+	int f(){ return N; }
+};
+
+template<int N>
+void f1(A<N>& a) {
+	std::vector<int> vec;
+	vec.push_back(a.f());
+	vec.push_back(N);
+}
+
+int main() {
+	auto a1 = A<4>{};
+	auto a2 = A<5>{};
+	f1(a1);
+	f1(a2);
+}
+\end{lstlisting}
+Given the above code and a checker, similar to Container Default Initializer checker, which looks for consecutive \verb|CXXMemberCallExpr| objects after the default constructor, gathers them and fixes the container initialization. This checker would find that the expression at \verb|line 9| is a \verb|CallExpr| wrapping an \verb|UnresolvedMemberCallExpr| which is right because that expression is dependent upon the template parameter \verb|N|. \medskip
+\par With this information the checker does nothing but skip this initialisation and moving to the next one. Because in this example there are 3 initialisation of \verb|std::vector|s. The remaining two comes from the template instantiation of \verb|f1| by calling it with both \verb|a1| and \verb|a2|. \medskip
+\par When this checker is at the second instantiation which is with \verb|N = 4|, there is no dependent expression anymore, so it creates a FixItHint \verb|vec{a.f(), 4}| to replace the default constructor with. After replacement, the checker creates a FixItHint again, with \verb|vec{a.f(), 5}| since \verb|N = 5| in that instantiation. \medskip
+\par So in the end we have two distinct FixItHints  \verb|vec{a.f(), 4}| and  \verb|vec{a.f(), 5}|, having the same source location to apply them. But how to decide which one to apply, or should we apply them at all? The answer is that we should not apply either of them because they are all just a product of template instantiation.  \medskip
+\par To solve these type of problems which are rooted in templated code instantiation we should check whether the AST segment we are matching against is a template instantiation.
+
+\subsubsection{Mocking}

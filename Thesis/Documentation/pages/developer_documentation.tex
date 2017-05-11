@@ -2,9 +2,53 @@
 \subsection{Detailed description of the solved problems}
 \par In this section I am going to present the technical background of the mentioned problems, why they are inefficient and what can we do to refactor them. I am referencing the \verb|N4567|\cite{cpp_standard} version Working Draft of the C++ standard, which contains every C++14 features and also freely available. 
 \subsubsection{Inefficient String Concatenation Check}
+\par As the C++ standard defines the Strings library it provides several ways of concatenating two strings together, \verb|a = a + b;|, \verb|a += b;| and \verb|a.append(b);|. \medskip
+\par The first one requires two operators to be declared, the first is \verb|operator+| for \verb|basic_string| \cite[\S21.4.8.1]{cpp_standard}: 
+\begin{verbatim}
+template<class charT, class traits, class Allocator>
+basic_string<charT,traits,Allocator>
+operator+(const basic_string<charT,traits,Allocator>& lhs,
+          const basic_string<charT,traits,Allocator>& rhs);
+\end{verbatim}
+\par And also the \verb|basic_string| constructor.
 \subsubsection{Inefficient Stream Use Check}
+\par This problem consists of two parts. Firstly what makes it marginally inefficient to stream characters as strings. The standard defines that the hierarchy of the classes which handle Input/Output should look like in Figure:\ref{cpp_io_hierarch}. 
+\begin{figure}[H]
+	\caption{C++ IO hierarchy}
+	\centering
+	\includegraphics[scale=0.6]{images/cpp_io_structure.pdf}
+	\label{cpp_io_hierarch}
+\end{figure}
+\par In \verb|basic_ostream| there are several overloads of \verb|operator<<| however we are only interested in two particular overload:
+\begin{itemize}
+	\item \begin{verbatim}
+		template<class traits>
+basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&,
+char);
+	\end{verbatim}
+	\item \begin{verbatim}
+template<class traits>
+basic_ostream<char,traits>& operator<<(basic_ostream<char,traits>&,
+const char*);
+\end{verbatim}
+\end{itemize}\cite[\S27.7.3.6.4]{cpp_standard}
+These overloads enable the \verb|basic_ostream| object to accept both \verb|<< "A"| and \verb|<< 'A'| structures. \medskip
+\par These two overloads both achieve the same goal, however performance-wise they are not the same, since \verb|"A"| structure will be represented by \verb|const char[2]|\footnote{strings are closed by null bytes in C++ so it would look like 'A'\textbackslash 0} in the code while \verb|'A'| will be only a single instance \verb|char|. And since arrays can be implicitly converted to pointers\cite[\S4.2]{cpp_standard} the former version will call the overload with \verb|const char*| in its signature.
+\par The only problem with \verb|const char*| is that the length of the string is not known, so it must be processed until the tailing null-byte is found. On the contrary when using \verb|char| the length is known, so no extra computation is required. However since modern CPUs are quite fast this extra computational complexity barely affects the observable performance, but in an embedded or in other time-critical even this small performance gain is significant. \medskip
+\par The other inefficiency related to \verb|basic_ostream| are the multiple calls to \verb|endl| function which is defined as\cite[\S27.7.3.8]{cpp_standard}:
+\begin{verbatim}
+template <class charT, class traits>
+  basic_ostream<charT,traits>& endl(basic_ostream<charT,traits>& os);
+\end{verbatim}
+To be able to apply \verb|operator<<| on functions the standard defines the following\cite[\S27.7.3.6]{cpp_standard}: 
+\begin{verbatim}
+basic_ostream<charT,traits>& operator<<(
+   basic_ostream<charT,traits>& (*pf)(basic_ostream<charT,traits>&));
+\end{verbatim} 
+which enables \verb|operator<<| to take a function, that returns \verb|basic_ostream&|, as an argument. \medbreak
+\par With this information one could think that streaming more than one \verb|std::endl| is equivalent to streaming \verb|'\n'| characters. However the standard also states that the \verb|endl| function has to call \verb|flush|\cite[\S27.7.3.8]{cpp_standard} which flushes the output buffer, which is a time consuming procedure. The actual performance overhead caused by flushing the output buffer is operating system dependent, but in general it can be categorized as a performance hog, if used repeatedly. 
 \subsubsection{Default Container Initialization Check}
-\par The C++ standard defines some standard containers which are able to hold collections of objects. The containers which are defined and we are interested in are: \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. To put elements in these containers one can define them with the default constructor and later add elements one by one with insertion operations. \medskip
+\par The C++ standard defines standard containers which are able to hold collections of objects. The containers which are defined and we are interested in are: \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. To put elements in these containers one can define them with the default constructor and later add elements one by one with insertion operations. \medskip
 \par Each insertion is a call of a member method for instance \verb|push_back()|, \verb|insert()| and \verb|emplace_back()|. To use these methods right after creating the container is inefficient, because the standard mentions that every mentioned container must have a constructor which takes an initializer list as an argument:
 \begin{itemize}
 	\item \verb|vector(initializer_list<T>, const Allocator& = Allocator());| where \verb|T| is the Type of the objects in the container \cite[\S23.3.6.2]{cpp_standard}

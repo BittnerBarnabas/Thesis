@@ -9,11 +9,13 @@
 	\includegraphics[scale=0.33]{images/llvm_flow}
 \end{figure}
 \par A common use-case of LLVM begins with an aforementioned language font-end, which will transform a given language, C++ in our case, to LLVM IR. The common optimizer, then will perform certain optimizations with this intermediate representation depending on the various settings, for instance if we want smaller or faster code. After the optimizer did its job it will transfer the optimized IR to a certain back-end, again depending on different settings, which will generate the actual executable code for the specified architecture. \medskip
+\par Describing the LLVM Intermediate Representation it raises the possibility of analyzing directly this representation instead of Abstract Syntax Tree. The drawbacks of this proposal are that this representation is too abstract to bear strong resemblance with the original code which makes it really hard to refactor the original code.
 \par Apart from defining a generalized way of code optimization LLVM provides a full framework of other utility classes and tools, with which one can write better, faster code.
 
 \subsection{Clang}
 \par The most widely spread C/C++ family compiler front-end for LLVM is Clang which aims to excel from the open-source compilers with its exceptionally fast compile-times and user-friendly diagnostic messages\cite{clang_features}. Because of its library oriented design it's really easy to integrate new modules into the Clang ecosystem and also it can be scaled much more effectively than a monolithic system. \medskip
-\par Clang tries to be as user-friendly as possible with its expressive diagnostic messages emitted during compilation. This includes for instance printing the exact location where the erroneous code is, displaying a caret icon (\textasciicircum) at the exact spot. Also Clang's output is coloured by default making it easier to see what the problem is. Also Clang can represent intervals in the output to show which segment of the code needs changing, along with so-called FixItHints which are little modifications to the code required to fix a certain problem. These can include inserting new code, removing old, and modifying existing.
+\par Clang tries to be as user-friendly as possible with its expressive diagnostic messages emitted during compilation. This includes for instance printing the exact location where the erroneous code is, displaying a caret icon (\textasciicircum) at the exact spot. \medskip 
+\par Also Clang's output is coloured by default making it easier to see what the problem is. Also Clang can represent intervals in the output to show which segment of the code needs changing, along with so-called FixItHints which are little modifications to the code required to fix a certain problem. These can include inserting new code, removing old, and modifying existing.
 \begin{figure}[h]
 	\caption{Clang diagnostic}
 	\includegraphics[scale = 0.42]{images/clang_diag}
