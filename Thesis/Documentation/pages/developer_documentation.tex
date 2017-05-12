@@ -1,16 +1,25 @@
 \section{Developer documentation}
 \subsection{Detailed description of the solved problems}
 \par In this section I am going to present the technical background of the mentioned problems, why they are inefficient and what can we do to refactor them. I am referencing the \verb|N4567|\cite{cpp_standard} version Working Draft of the C++ standard, which contains every C++14 features and also freely available. 
-\subsubsection{Inefficient String Concatenation Check}
-\par As the C++ standard defines the Strings library it provides several ways of concatenating two strings together, \verb|a = a + b;|, \verb|a += b;| and \verb|a.append(b);|. \medskip
-\par The first one requires two operators to be declared, the first is \verb|operator+| for \verb|basic_string| \cite[\S21.4.8.1]{cpp_standard}: 
-\begin{verbatim}
-template<class charT, class traits, class Allocator>
-basic_string<charT,traits,Allocator>
-operator+(const basic_string<charT,traits,Allocator>& lhs,
-          const basic_string<charT,traits,Allocator>& rhs);
-\end{verbatim}
-\par And also the \verb|basic_string| constructor.
+\subsubsection{Shared Pointer Conversion Check}
+\par Accoring to the C++ standard the \verb|memory| header has to contain a templated class \verb|shared_ptr| with the signature \verb|template<class T> class shared_ptr|\cite[\S20.8.2.2]{cpp_standard} \medskip
+\par This class is responsible for storing a standard C++ pointer and implementing shared ownership of this raw pointer. This means that the last \verb|shared_ptr| object is responsible for the destruction of the underlying pointer. \medskip
+\par The way \verb|shared_ptr| achieves the shared ownership is by a class-wide static variable (\verb|use_count()|) which is incremented in each construction and decremented in each destruction and if \verb|use_count()|  reaches zero in a destruction then the underlying pointer shall be destroyed either by default \verb|delete| keyword or by a user-supplied custom deleter. The modification of the reference count has to be an atomic process and should not be modified simultaneously\cite[\S20.8.2.2 4.]{cpp_standard}. \medskip
+\par These properties could make the \verb|shared_ptr| a hidden source of performance hogs when implicit temporary object creation is involved.  Such as the case when inherit is used. \medskip
+\par The standard says that a pointer to a derived class shall always be implicit convertible to a pointer to the base class\cite[\S4.10 3.]{cpp_standard}. Also in C++ objects generated  by template instantiations are not covariant, they are invariant in fact, meaning there is no implicit conversion in this example, but a compile time error:
+\begin{lstlisting}[language=c++, frame=single]
+struct A {}; struct B : A {};
+std::vector<B*> vec1;
+std::vector<A*> vec2;
+vec2 = vec1;
+\end{lstlisting}
+\par Yet to make \verb|shared_ptr<A>| covariant, to preserve to resemblence to a raw pointer, the standard defines constructors with signature 
+\\ \verb|template<class Y> shared_ptr(const shared_ptr<Y>& r) noexcept;|\\ 
+\verb|template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;| \\
+\cite[\S20.8.2.2.1]{cpp_standard}
+which should be eligible for overload resolution if and only  if \verb|T*| is convertible to \verb|Y*|. \medskip
+\par This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous. But this conversion is costly, because of the reference counting, which in this case decrements the reference count in \verb|shared_ptr<Derived>| and increments in \verb|shared_ptr<Base>|. This incrementing, decrementing is unnecessary and resource consuming. \medskip
+\par To solve this problem, the easiest method is to refactor the function which expects a \verb|shared_ptr<Base>|, to expect a \verb|const Base&| or \verb|const B*| and call the function with either \verb|*ptr.get()| or \verb|ptr.get()|.
 \subsubsection{Inefficient Stream Use Check}
 \par This problem consists of two parts. Firstly what makes it marginally inefficient to stream characters as strings. The standard defines that the hierarchy of the classes which handle Input/Output should look like in Figure:\ref{cpp_io_hierarch}. 
 \begin{figure}[H]
@@ -47,6 +56,26 @@ basic_ostream<charT,traits>& operator<<(
 \end{verbatim} 
 which enables \verb|operator<<| to take a function, that returns \verb|basic_ostream&|, as an argument. \medbreak
 \par With this information one could think that streaming more than one \verb|std::endl| is equivalent to streaming \verb|'\n'| characters. However the standard also states that the \verb|endl| function has to call \verb|flush|\cite[\S27.7.3.8]{cpp_standard} which flushes the output buffer, which is a time consuming procedure. The actual performance overhead caused by flushing the output buffer is operating system dependent, but in general it can be categorized as a performance hog, if used repeatedly. 
+\subsubsection{Inefficient String Concatenation Check}
+\par As the C++ standard defines the Strings library it provides several ways of concatenating two strings together, \verb|a = a + b;|, \verb|a += b;| and \verb|a.append(b);|. \medskip
+\par The first one requires two operators to be declared, the first is \verb|operator+| for \verb|basic_string| \cite[\S21.4.8.1]{cpp_standard}: 
+\begin{verbatim}
+template<class charT, class traits, class Allocator>
+basic_string<charT,traits,Allocator>
+  operator+(const basic_string<charT,traits,Allocator>& lhs,
+            const basic_string<charT,traits,Allocator>& rhs);
+\end{verbatim}
+\par And also the \verb|basic_string|'s relevant constructor:
+\begin{verbatim}
+basic_string(basic_string&& str) noexcept;
+\end{verbatim}
+\par The other two ways of concatenating is with a designated member function: \cite[\S21.4.6.1]{cpp_standard} and \cite[\S21.4.6.2]{cpp_standard}
+\begin{verbatim}
+basic_string&  operator+=(const basic_string& str);
+basic_string&  append(const basic_string& str);
+\end{verbatim}
+\par Where \verb|operator+=| just calls \verb|append|. \verb|append| then does the process of concatenating the strings. The standard does not say how the implementation should behave in the \verb|append| operation, but an industrial grade standard implementation should use the possibility of simply copying (moving if applicable) the characters of the \verb|append| argument to the receiver's buffer if it fits. Otherwise the buffer should be increased and the whole temporary object copied. \medskip
+\par This way it would be more efficient to use \verb|append| member function instead of creating a new string with containing the exact copy of itself and then assigning it to itself.
 \subsubsection{Default Container Initialization Check}
 \par The C++ standard defines standard containers which are able to hold collections of objects. The containers which are defined and we are interested in are: \verb|std::vector|, \verb|std::set|, \verb|std::deque| and \verb|std::map|. To put elements in these containers one can define them with the default constructor and later add elements one by one with insertion operations. \medskip
 \par Each insertion is a call of a member method for instance \verb|push_back()|, \verb|insert()| and \verb|emplace_back()|. To use these methods right after creating the container is inefficient, because the standard mentions that every mentioned container must have a constructor which takes an initializer list as an argument:
@@ -57,31 +86,31 @@ which enables \verb|operator<<| to take a function, that returns \verb|basic_ost
 	\item \verb|deque(initializer_list<T>, const Allocator& = Allocator());| where \verb|T| is the Type of the objects in the container\cite[\S23.3.3.2]{cpp_standard}
 \end{itemize}
 \par The more efficient form would be list-initializing the containers in place with the declaration by passing an \verb|initializer_list| to the constructor. But the list-initialization raises concerns when implicit casting is involved. The standard states "If a narrowing conversion \dots is required to convert any of the arguments, the program is ill-formed"\cite[\S8.5.4 3.6]{cpp_standard}. \medskip
-\par A narrowing conversion is an implicit conversion of numerical types where there is possibility of over- or underflow when converting to the destination type. For a more detailed description see \cite[\S8.5.4 7]{cpp_standard}. To remove implicit narrowing conversions we need to introduce explicit casting. This checker uses C-style casts, which in the future should be replaced with a safer \verb|static_cast|.
-\subsubsection{Shared Pointer Conversion Check}
-\par Accoring to the C++ standard the \verb|memory| header has to contain a templated class \verb|shared_ptr| with the signature \verb|template<class T> class shared_ptr|\cite[\S20.8.2.2]{cpp_standard} \medskip
-\par This class is responsible for storing a standard C++ pointer and implementing shared ownership of this raw pointer. This means that the last \verb|shared_ptr| object is responsible for the destruction of the underlying pointer. \medskip
-\par The way \verb|shared_ptr| achieves the shared ownership is by a class-wide static variable (\verb|use_count()|) which is incremented in each construction and decremented in each destruction and if \verb|use_count()|  reaches zero in a destruction then the underlying pointer shall be destroyed either by default \verb|delete| keyword or by a user-supplied custom deleter. The modification of the reference count has to be an atomic process and should not be modified simultaneously\cite[\S20.8.2.2 4.]{cpp_standard}. \medskip
-\par These properties could make the \verb|shared_ptr| a hidden source of performance hogs when implicit temporary object creation is involved.  Such as the case when inherit is used. \medskip
-\par The standard says that a pointer to a derived class shall always be implicit convertible to a pointer to the base class\cite[\S4.10 3.]{cpp_standard}. Also in C++ objects generated  by template instantiations are not covariant, they are invariant in fact, meaning there is no implicit conversion in this example, but a compile time error:
- \begin{lstlisting}[language=c++, frame=single]
-struct A {}; struct B : A {};
-std::vector<B*> vec1;
-std::vector<A*> vec2;
-vec2 = vec1;
-\end{lstlisting}
-\par Yet to make \verb|shared_ptr<A>| covariant, to preserve to resemblence to a raw pointer, the standard defines constructors with signature 
-\\ \verb|template<class Y> shared_ptr(const shared_ptr<Y>& r) noexcept;|\\ 
-\verb|template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;| \\
-\cite[\S20.8.2.2.1]{cpp_standard}
- which should be eligible for overload resolution if and only  if \verb|T*| is convertible to \verb|Y*|. \medskip
- \par This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous. But this conversion is costly, because of the reference counting, which in this case decrements the reference count in \verb|shared_ptr<Derived>| and increments in \verb|shared_ptr<Base>|. This incrementing, decrementing is unnecessary and resource consuming. \medskip
- \par To solve this problem, the easiest method is to refactor the function which expects a \verb|shared_ptr<Base>|, to expect a \verb|const Base&| or \verb|const B*| and call the function with either \verb|*ptr.get()| or \verb|ptr.get()|.
+\par A narrowing conversion is an implicit conversion of numerical types where there is possibility of over- or underflow when converting to the destination type. For a more detailed description see \cite[\S8.5.4 7]{cpp_standard}. To remove implicit narrowing conversions we need to introduce explicit casting. This checker uses C-style casts, which in the future should be replaced with a safer \verb|static_cast|. \medskip
+\par The standard also ensures that the elements in a list-initializer are constructed from left to right order\cite[\S8.5.4.4]{cpp_standard}, this way not violating the order they were originally added to the container.
 \subsection{Implementations}
+\par In this section I am going to cover the implementation details of each module, covering the possible pitfalls and issues with implementing a standalone Clang-tidy module.  
+\subsubsection{General implementation details}
+\par Each check have at least two methods, which are inherited from the \verb|ClangTidyCheck| base class. The first method is \verb|registerMatchers| which acts as a set-up phase. The actual AST matcher structure should be assembled in this function, adding all components. Also the callback method is specified in this segment, more precisely the object on which the callback method is called, this is usually \verb|this|. In this method the developer has access to a \verb|MatchFinder| object which controls the matchers. To add an AST matcher to the \verb|MatchFinder|, the member function \verb|addMatcher()| can be used, that takes an AST matcher and a callback object as parameters. \medskip
+\par The other method is the callback function named \verb|check|. This method gets called for every match on the AST by the checkers registered beforehand in the \verb|registerMatchers| method. In this function the developer has access to virtually everything from the actual source code to the AST nodes, which can be queried from a \verb|MatchResult| object.
 \subsubsection{Inefficient String Concatenation Check}
+\par Since Clang 4.0.0\cite{string_concat_release} this module is part of the official Clang svn repository and had been referenced in a guide to improve developer workflow productivity\cite{string_concat_ref}.
+\par When implementing this checker the greatest challenge was matching such \verb|operator=| operator calls which have the left hand side variable on the right hand side also. Initially there were two options, either filter on the AST matcher's side or match everything and then filter in the callback function. \medskip
+\par Filtering in the AST matcher is the preferred method because its less resource intensive and clearer. This is handled by first searching for an \verb|operator=| with a \verb|basic_string| on the left side and binding a label, basically a string, to that node. Then traversing the right side of the operator and looking for \verb|operator+| and also the node which is equal to the already bound node. \medskip
+\par Since the checker can be parameterized there is a third method overload named \verb|storeOptions| which handles the passed parameters. If the option \verb|StrictMode| is specified as \verb|true| the checker will be triggered for all inefficient calls, else only for those which are inside a loop. \medskip
+\par This way we are sure that the callback will only be called for those operators which have the same variable on the right side as the left side.
 \subsubsection{Inefficient Stream Use Check}
+\par The implementation fo this checker consists of two distinct parts, one part for matching the character conversions and the other is for matching the multiple use of \verb|std::endl|. \medskip
+\par To match the character conversion, the tool is looking for calls to \verb|operator<<| that have \verb|std::basic_ostream| as one of the arguments, to make sure we are only dealing with cases regarding streams and not interfering with user-defined overloads of \verb|operator<<|. The other argument must be an \verb|ImplicitCastExpr|, that as the name suggests is an implicit cast between two types, which have \verb|const char[2]| as source and \verb|const char *| as destination. With these structures we can safely match the inefficient character conversions. \medskip
+\par To match multiple \verb|std::endl| use, we can use the left-associative property of \verb|operator<<|. Matching the outermost \verb|std::endl| and looking for any descendant \verb|std::endl| we can make sure only the inner \verb|std::endl| calls will be labelled. \medskip
+\par Having constructed the checking functionality so that it only calls the callback function on an exact match we have only formatting to do. In case of \verb|std::endl| the formatting is quite simple, just replace the unwanted \verb|std::endl|s with \verb|'\\n'| to be able to print \verb|'\n\| in the warning message. \medskip
+\par In the case of simple characters its a more complex process, because of the character escapes. This is solved by introducing a static free function \verb|getEscapedChar| which contains a character table, and maps the characters to their escaped versions. 
 \subsubsection{Default Container Initialization Check}
 \subsubsection{Shared Pointer Conversion Check}
+\par To summarize in a nutshell the matcher part of the check, it's looking for \verb|CallExpr|s involving such functions that have a \verb|shared_ptr| as argument and a constructor-conversion is taking place at the place of function call. \medskip
+\par Delving more into the details of the matcher implementation, I should highlight the structure responsible for matching the actual constructor-conversion. To do that we need to define two \verb|QualType|s to represent the type for \verb|shared_ptr| and also \verb|unique_ptr| (I will talk about its importance later) with the help of the function \verb|getQualTypeForTemplate|, which is a C++11 function using tailing return type with \verb|auto| type deduction of \verb|decltype(QualType())|. \medskip
+\par Having the aforementioned types, we can construct the part which matches on such \verb|Expr|s which have an \verb|ImplicitCastExpr| that is a \verb|CK_ConstructorConversion| type of cast. Moreover this cast has to have the type of the previously mentioned \verb|shared_ptr| unless it is a conversion from \verb|unqiue_ptr| to \verb|shared_ptr|. \medskip
+\par With these components, we only need to match such \verb|CallExpr|s that have this implicit conversion and bind a label to it, and also bind a label to the calllee function's declaration.
 \subsection{Program Structure}
 \par This section covers the abstract structure of the application in Clang-tidy project. The visualization is done with the Unified Modelling Language (UML for short), which is a standard way of representing different logical and physical connections in a computer software. We use UML Class diagrams to visualize the methods and fields of an object, representing also the visibility of these components from the outside of the class.  \medskip
 \par In Figure:\ref{inheritence} we visualize each module's ancestor and how these modules are decoupled from each other.  

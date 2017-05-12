@@ -43,5 +43,8 @@ Given the above code and a checker, similar to Container Default Initializer che
 \par When this checker is at the second instantiation which is with \verb|N = 4|, there is no dependent expression anymore, so it creates a FixItHint \verb|vec{a.f(), 4}| to replace the default constructor with. After replacement, the checker creates a FixItHint again, with \verb|vec{a.f(), 5}| since \verb|N = 5| in that instantiation. \medskip
 \par So in the end we have two distinct FixItHints  \verb|vec{a.f(), 4}| and  \verb|vec{a.f(), 5}|, having the same source location to apply them. But how to decide which one to apply, or should we apply them at all? The answer is that we should not apply either of them because they are all just a product of template instantiation.  \medskip
 \par To solve these type of problems which are rooted in templated code instantiation we should check whether the AST segment we are matching against is a template instantiation.
-
 \subsubsection{Mocking}
+\par To be able to test the modules' behaviour independent of the actual standard implementation, when using elements from the standard library, we have to create an isolated environment imitating the way how the standard works. To achieve this when using the STL library we create the required classes and functionality. Objects created to mimic the behaviour of the original one are called mock objects.
+\subsubsection{Test files}
+\par There is a test-file for each module introduced, which are run as part of \verb|check-clang-tools| CMake task. Each file contains the mock of the related STL containers and other functionality residing in namespace \verb|std|, for instance conversions, templated type checks, etc.. \medskip
+\par Each test-case in the files are annotated with \verb|CHECK-MESSAGES| and/or \verb|CHECK-FIXES| comments. After them are the expected diagnostic messages and also the expected FixItHints fixes.
