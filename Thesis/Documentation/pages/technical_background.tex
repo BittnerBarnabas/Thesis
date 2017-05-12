@@ -35,7 +35,7 @@
 \subsection{Abstract syntax tree - AST}
 \par The fundamental bedrock of compiling a programming language is the construction of a so-called abstract syntax tree, which is a tree that represents language specific constructs annotated with all the information what's needed to generate machine code from the source. From now on when I am talking about AST I mean specifically an AST generated from C++ code. \medskip
 \par The AST doesn't contain every syntactic information from the source code, for instance, it will not contain semicolons after statements. But will include information about the implicit casting of variables, implicit constructor calls, temporary object creation and many other implicitly coded information.
-
+\pagebreak
 \begin{lstlisting}[language=c++,frame=single, caption={A simple C++ program}, label={lst:basic_cpp}]
 int main()
 {
@@ -64,6 +64,7 @@ FunctionDecl 0x7fe488 <basic.cpp:1:1, line:5:1> line:1:5 main 'int (void)'
 \par The generated AST can also be represented as a tree graph to make it visually more appealing. This model represents best how the different nodes are connected together. \medskip
 \par In Clang the AST nodes are implemented as C++ classes with the proper use of inheritance, so the whole AST follows an object-oriented design, making it much easier to work with. In static analysis, we are primarily trying to find the patterns connected to the problematic code, and then traverse the AST looking for these patterns. \medskip
 \par Clang provides numerous so-called AST matchers\cite{ast_reference}, which are structures that can match different predicates on AST nodes. This greatly simplifies how one can traverse and look for a specific code pattern in the tree.
+\pagebreak
 \begin{lstlisting}[language=c++,frame=single, caption={Basic AST matchers}, style=ast, label={lst:basic_match}]
 varDecl(matchesName("foo.*"))
 forStmt(hasDescendant(varDecl()))
