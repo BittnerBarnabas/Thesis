@@ -158,3 +158,5 @@ basic_string&  append(const basic_string& str);
 	\label{shared_ptr_check}
 \end{figure}
 \par In Figure:\ref{shared_ptr_check} you can inspect the structure of the Inefficient Shared Pointer checker which declares two extra static methods for retrieving extra information about the matched nodes. 
+\subsection{Future work}
+\par There are always ways to improve existing applications so as with these modules. The Inefficient Stream Use check could be made compatible with \verb|wchar|s, the Inefficient String Concatenation check could be improved by a simple FixItHint for those scenarios when the concatenation is in its simplest form. The Container Default Initializer check could include \verb|operator[]| for \verb|std::map| and also other \verb|STL| containers could be involved in the module. Finally, the Shared Pointer Conversion check could include a simple FixItHint for those scenarios when there's no usage of the \verb|shared_ptr|'s API inside the function.

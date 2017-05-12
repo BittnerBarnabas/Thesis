@@ -85,7 +85,7 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 	\includegraphics[scale=0.7]{images/shared_ptr_performance.pdf}
 \end{figure}
 \subsubsection{Inefficient String Concatenation}
-\par When benchmarking the speed of concatenating strings in a loop the results were surprising. As it turns out naively concatenating strings in a loop is has a quadratic time complexity, yet if we modify on the operation as the check suggests we get a linear time complexity that is much faster than the original version. We can fit a quadratic polynomial $y=0.0002033x^2+0.0086x-0.00085$ with $R^2=1.0$ to the original and a linear $y=0.0001347x+0.00380$ with $R^2=0.84$ to the refactored. 	
+\par When benchmarking the speed of concatenating strings in a loop the results were surprising. As it turns out naively concatenating strings in a loop is has a quadratic time complexity, yet if we modify on the operation as the check suggests we get a linear time complexity that is much faster than the original version. We can fit a quadratic polynomial $y=0.0002033x^2+0.0086x-0.00085$ with $R^2=1.0$ to the original and a linear $y=0.0001347x+0.00380$ with $R^2=0.84$ to the refactored.
 \begin{figure}
 	\caption{String concatenation benchmark}
 	\includegraphics[scale=0.7]{images/string_concat.pdf}
@@ -127,7 +127,7 @@ Installing the program with the new modules is fairly an easy process, but it va
 \par WSL works by using a so-called Pico process which was developed by Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native Linux application while mapping all the Linux kernel calls to NT kernel calls hence providing the seamless functionality. \medskip
 \par To enable WSL in Windows 10, first enable \verb|Developer Mode| in \verb|System Updates| menu. Then open \verb|Windows Features| menu and enable \verb|WSL| and restart the system. After restarting open the program named \verb|Bash on windows| and follow the instructions. After having installed Ubuntu user-mode, proceed to Linux installation guide to complete the installation.
 \subsubsection{OS X}
-\par On macOs (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all, because macOs is a Unix-type system (its roots are in BSD) working in a Terminal on macOs is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOs doesn't have one out of the box.
+\par On macOS (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all, because macOS is a Unix-type system (its roots are in BSD) working in a Terminal on macOS is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOS doesn't have one out of the box.
 \par We will install the Homebrew\cite{homebrew_homepage} package manager, as this supports the most features and it's the most supported one. Open a terminal and type:
 \begin{lstlisting}[language=bash, frame=single]
 user@host:$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"

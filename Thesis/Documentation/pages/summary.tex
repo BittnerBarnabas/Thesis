@@ -1,4 +1,8 @@
 \section{Summary}
 \par To summarise, with the use of static program analysis the four new modules introduced in this document, that are part of the open-source project Clang-tidy, are able to find code patterns, in C++ code-base, which are inefficient constructs in terms of runtime performance. Using source-to-source transformations two modules have the ability to automatically correct the inefficient part of the source code. \medskip
 \par The four modules are able to warn about the concatenation of \verb|std::string|s in a more efficient way, to use \verb|operator<<| without performance overhead, initializing \verb|STL| containers in place and also to use \verb|std::shared_ptr| with caution. \medskip
-\par Having run several benchmarks on the problematic code snippets, significant performance differences begin to emerge between the refactored and the original code. This justifies the goal of this thesis in creating a usable code-quality improving software. 
+\par Having run several benchmarks on the problematic code snippets, significant performance differences begin to emerge between the refactored and the original code. This justifies the goal of this thesis in creating a usable code-quality improving software.
+\pagebreak
+\section{Acknowledgements}
+\par First I would like to express my utter gratitude towards my supervisor, \SupervisorName. Without his guidance and knowledge, this thesis and the modules couldn't have become a reality. He always had the time to thoroughly answer any questions I had during working on this document and application and to help me whenever I had doubts. \medskip
+\par Also, I would like to thank my girlfriend Fanni Bagaméri for her unconditional love, support and devoted attention to lecturing this document in linguistical terms.
