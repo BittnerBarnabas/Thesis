@@ -1,9 +1,9 @@
 \section{User documentation}
 \subsection{Problems solved by new modules}
-\par The four new modules created for Clang-tidy aim to address four fairy distinctive and inefficient programming patterns. 
+\par The four new modules created for Clang-tidy aim to address four fairly distinctive and inefficient programming patterns. 
 \subsubsection{Inefficient String Concatenation\cite{clang_tidy_string_concat}}
-\par The first problem involves the standard library's string class. This class, more precisely \\\verb|std::basic_string<char>|, is the default implementation of a modifiable high-level character sequence in the language. It provides several functions which can modify, transform the underlying characters. \medskip
-\par The problem arises when one wants to concatenate two or more strings. There are several methods achieving the concatenation: \verb|operator+|, \verb|operator+=| and \verb|.append()| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  \\
+\par The first problem involves the standard library's string class. This class, more precisely \\\verb|std::basic_string<char>|, is the default implementation of a modifiable high-level character sequence in the language. It provides several functions which can modify and transform the underlying characters. \medskip
+\par There are several methods achieving the concatenation of two or more \verb|std::string|s with \verb|operator+|, \verb|operator+=| and \verb|.append()| member function. The problem arises when one wants to include the original string in the concatenation with a structure similar to \verb|a = a + b;| which is highly inefficient. In Listing:\ref{lst:ineff_string_concat} the concatenation using \verb|operator+| is causing a noticeable performance overhead in the application.  \\
 \begin{lstlisting}[language=c++, frame=single ,caption={Highly inefficient code}, label={lst:ineff_string_concat}]
 std::string a("Foo"), b("Baz");
 for (int i = 0; i < 20000; ++i) 
@@ -38,7 +38,7 @@ std::cout << '\n' << '\n' << std::endl;
 \end{lstlisting}
 \par This check contains FixItHints for correcting the aforementioned issue. It replaces \verb|""| with \verb|''| and also rewrites multiple \verb|std::endl| function calls in a stream, except for the last one. 
  \subsubsection{Shared Pointer Conversion}
- \par This problem is relevant to \verb|std::shared_ptr| in the standard library. A \verb|shared_ptr| is a smart pointer, therefore it cannot dangle (point to invalid memory address), which allows other \\\verb|shared_ptr|s to point at the same object as the first pointer, as opposed to \verb|std::unique_ptr| which doesn't allow multiple owners of the object it points to. This makes it slightly more overweight than the \verb|unique_ptr| because each pointer has to know whether it's the last one keeping a reference to the object, and if so when it's destructed it needs to free the resources allocated for the object it points to. \medskip
+ \par This problem is relevant to \verb|std::shared_ptr| in the standard library. A \verb|shared_ptr| is a smart pointer, therefore it cannot dangle (point to invalid memory address), which allows other \\\verb|shared_ptr|s to point at the same object as the first pointer, as opposed to \verb|std::unique_ptr| which doesn't allow multiple owners of the object it points to. This makes it have a slight overhead against the \verb|unique_ptr| because each pointer has to know whether it's the last one keeping a reference to the object, and if so when it's destructed it needs to free the resources allocated for the object it points to. \medskip
  \par In C++ where classes are involved with the use of polymorphism a derived class' instance can always be converted to a base class' one. With this casting operation and \verb|shared_ptr|'s way of knowing how many references there are for the object, passing \verb|shared_ptr|s via function arguments where there is implicit (or explicit) casting used is really inefficient in terms of performance. \medskip
  \begin{lstlisting}[language=c++, frame=single ,caption={Inefficient implicit cast}, label={lst:ineff_shared_prob}]
  class A {};
@@ -75,7 +75,7 @@ vec.push_back(1.0);
 std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 \end{lstlisting}
 \subsection{Performance benchmarks}
-\par In this section, I am showing some performance benchmarks of code which are affected by the problems each check fixes and compare these results to the results of the improved, refactored code. Each test is executed in a well isolated environment to highlight the execution times of only the code we are interested in. 
+\par In this section, I am going to present some performance benchmarks of code which are affected by the problems each check fixes and compare these results to the results of the improved, refactored code. Each test is executed in a well isolated environment to highlight the execution times of only the code we are interested in. 
 \subsubsection{Shared Pointer Conversion}
 \par After applying the suggested fixes by the Shared Pointer Conversion checker we see a significant improvement in speed compared to the previous version. \medskip
 \par If we try to fit a line over the points with linear regression we get $y=0.0002632x+0.0000059$ with $R^2=0.98$ for the refactored one and $y = 0.002938x+0.0075$ with $R^2=1$ for the original one. From these line equations we can see that the original is about 10 times steeper than the refactored one. 
@@ -96,7 +96,7 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 	\includegraphics[scale=0.7]{images/container_init_performance.pdf}
 \end{figure}
 \subsubsection{Inefficient Stream Use}
-\par Benchmarking this check was divided into two categories because it warns about two distinct, yet related, performance problems. \medskip 
+\par Benchmarking this check was divided into two categories because it warns us about two distinct, yet related, performance problems. \medskip 
 \par First I measured the performance gains of refactoring \verb|<< "a"| type of calls to \verb|<< 'a'| types. The surprising result that I got was that there was no significant increase in performance when applied the FixItHints from the check only a marginal benefit. Performing linear regression analysis on the samples we get $y=0.004748x+0.0061$ with $R^2=1.0$ for the original and a slightly smoother $y=0.004596x+0.004596$ with $R^2=1.0$ for the refactored code.
 \begin{figure}[H]
 	\caption{Char conversion benchmark}
@@ -121,12 +121,10 @@ Installing the program with the new modules is fairly an easy process, but it va
 \par MSYS is a collection of different utility programs from GNU project. It's an optional complementary designed for MingGW\cite{mysis_page}. Its goal is to simplify interacting with UNIX tools, and also to provide a better command-line terminal application for Windows by providing Bash. \medskip
 \par To install the program with MinGW, first you have to download the latest MinGW run-time from the original site: \url{http://www.mingw.org/}. Following this guide one should be able to install MinGW, MSYS, subversion and cmake on their Windows PC: \url{http://ingar.satgnu.net/devenv/mingw32/base.html}. \medskip
 \par With these tools you can continue with the second step of Linux installation guide, following the steps carefully. \medskip
-\paragraph{Cygwin}
-\par An other option to installation is using Cygwin which is an environment aiming at creating a POSIX compatible layer in Windows. \medskip
 \paragraph{WSL}
 \par also known as Windows Subsystem for Linux is an optional feature from Microsoft on Windows 10 Desktop operating systems. The subsystem enables the execution of native \verb|ELF64| binaries\cite{wsl_overview} on Windows, without a need of a virtual machine or third party layer. \medskip
-\par WSL works by using a so-called Pico process which was developed at Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native Linux application while mapping all the Linux kernel calls to NT kernel calls hence providing the seamless functionality. 
-\par 
+\par WSL works by using a so-called Pico process which was developed at Microsoft under project Drawbridge\cite{project_drawbridge} to enable a way of application sandboxing "with minimal kernel API surface"\cite{project_drawbridge}. This Pico process wraps the native Linux application while mapping all the Linux kernel calls to NT kernel calls hence providing the seamless functionality. \medskip
+\par To enable WSL in Windows 10, first enable \verb|Developer Mode| in \verb|System Updates| menu. Then open \verb|Windows Features| menu and enable \verb|WSL| and restart the system. After restarting open the program named \verb|Bash on windows| and follow the instructions. After having installed Ubuntu user-mode, proceed to Linux installation guide to complete the installation.
 \subsubsection{OS X}
 \par On macOs (formerly OS X) the installation is fairly straightforward, we just need some preparation before we can continue with the Linux guide in \ref{linux}. First of all because macOs is a Unix type system (its roots are in BSD) working in a Terminal on macOs is quite familiar experience with a native Linux one, both having Bash as the default terminal application. But before we can deep dive into the Linux steps we need to install a package manager, because macOs doesn't have one out of the box.
 \par We will install the Homebrew\cite{homebrew_homepage} package manager, as this supports the most features and it's the most supported one. Open a terminal and type: 
@@ -210,3 +208,5 @@ user@host:$ clang-tidy ./source.cpp
 	\item since version 4.0.0 Clang supports generating it with \verb|-MJ| argument\cite{clang_release_notes}
 \end{itemize}
 \subsubsection{GUI}
+\par To run Clang-tidy through a GUI is possible with CLion. CLion is a cross platform C/C++ IDE developed by JetBrains, that is running on JVM. The 2017.2 EAP version of CLion started to support Clang-tidy officially\cite{clion_tidy_eap}. Apart from the official support there's a Clang-tidy plugin\cite{clion_tidy_plugin} also which can provide a GUI experience. \medskip
+\par Keeping the warnings emitted by Clang-tidy organised and stored for a project can be done by using CodeChecker\cite{codechecker_gsd}, an open-source project from a collaboration between Ericsson and ELTE. This tool is a "defect database and viewer"\cite{codechecker} that can filter, sort, suppress and visualise warnings produced by either Clang Static Analyzer or Clang-tidy.
