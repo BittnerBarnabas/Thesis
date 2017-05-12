@@ -85,7 +85,9 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 	\includegraphics[scale=0.7]{images/shared_ptr_performance.pdf}
 \end{figure}
 \subsubsection{Inefficient String Concatenation}
-\par When benchmarking the speed of concatenating strings in a loop the results were surprising. As it turns out naively concatenating strings in a loop is has a quadratic time complexity, yet if we modify on the operation as the check suggests we get a linear time complexity that is much faster than the original version. We can fit a quadratic polynomial $y=0.0002033x^2+0.0086x-0.00085$ with $R^2=1.0$ to the original and a linear $y=0.0001347x+0.00380$ with $R^2=0.84$ to the refactored. 	\caption{String concatenation benchmark}
+\par When benchmarking the speed of concatenating strings in a loop the results were surprising. As it turns out naively concatenating strings in a loop is has a quadratic time complexity, yet if we modify on the operation as the check suggests we get a linear time complexity that is much faster than the original version. We can fit a quadratic polynomial $y=0.0002033x^2+0.0086x-0.00085$ with $R^2=1.0$ to the original and a linear $y=0.0001347x+0.00380$ with $R^2=0.84$ to the refactored. 	
+\begin{figure}
+	\caption{String concatenation benchmark}
 	\includegraphics[scale=0.7]{images/string_concat.pdf}
 \end{figure}
 \subsubsection{Container Default Initialization}
