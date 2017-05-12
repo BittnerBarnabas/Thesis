@@ -78,31 +78,31 @@ std::vector<int> vec{3, (int) 1.2, (int) 1.0};
 \par In this section, I am showing some performance benchmarks of code which are affected by the problems each check fixes and compare these results to the results of the improved, refactored code. Each test is executed in a well isolated environment to highlight the execution times of only the code we are interested in. 
 \subsubsection{Shared Pointer Conversion}
 \par After applying the suggested fixes by the Shared Pointer Conversion checker we see a significant improvement in speed compared to the previous version. \medskip
-\par If we try to fit a line over the points with linear regression we get $y=0.0002632x+0.0000059$ for the refactored one and $y = 0.002938x+0.0075$ for the original one. From these line equations we can see that the original is about 10 times steeper than the refactored one. 
+\par If we try to fit a line over the points with linear regression we get $y=0.0002632x+0.0000059$ with $R^2=0.98$ for the refactored one and $y = 0.002938x+0.0075$ with $R^2=1$ for the original one. From these line equations we can see that the original is about 10 times steeper than the refactored one. 
 \begin{figure}[H]
 	\caption{Shared pointer conversion benchmark}
 	\includegraphics[scale=0.7]{images/shared_ptr_performance.pdf}
 \end{figure}
 \subsubsection{Inefficient String Concatenation}
-\par When benchmarking the speed of concatenating strings in a loop the results were surprising. As it turns out naively concatenating string in a loop is has a quadratic time complexity, yet if we modify on the operation as the check suggests we get a linear time complexity that is much faster than the original version. We can fit a quadratic polynomial $y=0.0002033x^2+0.0086x-0.00085$ to the original and a linear $y=0.0001347x+0.00380$ to the refactored. 
+\par When benchmarking the speed of concatenating strings in a loop the results were surprising. As it turns out naively concatenating string in a loop is has a quadratic time complexity, yet if we modify on the operation as the check suggests we get a linear time complexity that is much faster than the original version. We can fit a quadratic polynomial $y=0.0002033x^2+0.0086x-0.00085$ with $R^2=1.0$ to the original and a linear $y=0.0001347x+0.00380$ with $R^2=0.84$ to the refactored. 
 \begin{figure}[H]
 	\caption{String concatenation benchmark}
 	\includegraphics[scale=0.7]{images/string_concat.pdf}
 \end{figure}
 \subsubsection{Container Default Initialization}
-\par Benchmarking code that used an inefficient way of initialising an \verb|std::vector| on which the check was run with FixItHints enabled, the automatic refactoring provided a much faster code than the original one. Fitting lines on both samples gives us $y=0.007635x+0.0038$ line for the original and $y=0.002486x+0.0046$ for the refactored one, resulting in a 3 times faster code.
+\par Benchmarking code that used an inefficient way of initialising an \verb|std::vector| on which the check was run with FixItHints enabled, the automatic refactoring provided a much faster code than the original one. Fitting lines on both samples gives us $y=0.007635x+0.0038$ with $R^2=1.0$ line for the original and $y=0.002486x+0.0046$ with $R^2=1.0$ for the refactored one, resulting in a 3 times faster code.
 \begin{figure}[H]
 	\caption{Container Initialization benchmark}
 	\includegraphics[scale=0.7]{images/container_init_performance.pdf}
 \end{figure}
 \subsubsection{Inefficient Stream Use}
 \par Benchmarking this check was divided into two categories because it warns about two distinct, yet related, performance problems. \medskip 
-\par First I measured the performance gains of refactoring \verb|<< "a"| type of calls to \verb|<< 'a'| types. The surprising result that I got was that there was no significant increase in performance when applied the FixItHints from the check only a marginal benefit. Performing linear regression analysis on the samples we get $y=0.004748x+0.0061$ for the original and a slightly smoother $y=0.004596x+0.004596$ for the refactored code.
+\par First I measured the performance gains of refactoring \verb|<< "a"| type of calls to \verb|<< 'a'| types. The surprising result that I got was that there was no significant increase in performance when applied the FixItHints from the check only a marginal benefit. Performing linear regression analysis on the samples we get $y=0.004748x+0.0061$ with $R^2=1.0$ for the original and a slightly smoother $y=0.004596x+0.004596$ with $R^2=1.0$ for the refactored code.
 \begin{figure}[H]
 	\caption{Char conversion benchmark}
 	\includegraphics[scale=0.7]{images/stream_char_performance.pdf}
 \end{figure}
-\par The other type of tests were conducted on using multiple \verb|std::endl| on a single stream. The correction of this problem was also automatic, and the results show a 2 times increase in performance after applying the FixItHints. Fitting lines to the original gives a $y=0.01758x+0.059$ and a $y=0.008256x+0.001$ on the refactored. 
+\par The other type of tests were conducted on using multiple \verb|std::endl| on a single stream. The correction of this problem was also automatic, and the results show a 2 times increase in performance after applying the FixItHints. Fitting lines to the original gives a $y=0.01758x+0.059$ with $R^2=1.0$ and a $y=0.008256x+0.001$ with $R^2=1.0$ on the refactored. 
 \begin{figure}[H]
 	\caption{Multiple end-line benchmark}
 	\includegraphics[scale=0.7]{images/stream_endline_performance.pdf}
