@@ -150,6 +150,17 @@ user@host:$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/ins
 user@host:$ brew install svn, cmake
 \end{lstlisting}
 \par After successfully installing these applications you can head to the second point of the Linux guide to finalise the installation process.
+\subsubsection{From CD to OS X}
+\par It is possible to install the application from the CD disk to an environment, running macOS. To install just the program just copy the files from the directory \verb|bin| on the CD to a custom destination. To be able to run the tool from anywhere it needs to be on the \verb|PATH| environmental variable. To add temporarily to this variable type the following:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ export PATH=/path/to/installed/clang-tidy:$PATH
+\end{lstlisting}
+\par This way in the current session the \verb|PATH| will contain the \verb|clang-tidy| executable. But to add to the \verb|PATH| permanently you should edit either \verb|.profile| or \verb|.bashrc| in the user home directory and add the above line to the file. \medskip
+\par To verify that we are using this new version of Clang-tidy, type the following:
+\begin{lstlisting}[language=bash, frame=single]
+user@host:$ which clang-tidy
+\end{lstlisting}
+The result should be a path where the tool is installed.
 \subsubsection{Linux}\label{linux}
 \par Before we start installing the tool on a Linux system, we have to install some basic applications needed to download and compile the program. In the Linux world there are a lot of package manager applications, for instance, there is (on default) \verb|apt-get| on Debian-based systems, \verb|Pacman| on Arch Linux-based systems, \verb|rpm| on RedHat-based systems and \verb|Portage| on Gentoo-based systems. To install a package on these different systems use the following commands (supposing one have superuser privileges):
 \begin{lstlisting}[language=bash, frame=single]
