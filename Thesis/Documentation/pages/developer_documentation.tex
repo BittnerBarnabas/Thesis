@@ -13,13 +13,13 @@ std::vector<B*> vec1;
 std::vector<A*> vec2;
 vec2 = vec1;
 \end{lstlisting}
-\par Yet to make \verb|shared_ptr<A>| covariant, to preserve to resemblance to a raw pointer, the standard defines constructors with signature
+\par Yet to make \verb|shared_ptr<A>| covariant, to preserve the resemblance to a raw pointer, the standard defines constructors with signature
 \\ \verb|template<class Y> shared_ptr(const shared_ptr<Y>& r) noexcept;|\\
 \verb|template<class Y> shared_ptr(shared_ptr<Y>&& r) noexcept;| \\
 \cite[\S20.8.2.2.1]{cpp_standard}
 which should be eligible for overload resolution if and only if \verb|T*| is convertible to \verb|Y*|. \medskip
 \par This entails that a \verb|shared_ptr<A>| shall be implicit convertible to \verb|shared_ptr<B>| if \verb|A| is a derived class from \verb|B| and \verb|B| is accessible and unambiguous. But this conversion is costly, because of the reference counting, which in this case decrements the reference count in \verb|shared_ptr<Derived>| and increments in \verb|shared_ptr<Base>|. This increment, decrementing is unnecessary and resource consuming. \medskip
-\par To solve this problem, the easiest method is to refactor the function which expects a \verb|shared_ptr<Base>|, to expect a \verb|const Base&| or \verb|const B*| and call the function with either \verb|*ptr.get()| or \verb|ptr.get()|.
+\par To solve this problem, the easiest method is to refactor the function which expects a \verb|shared_ptr<Base>|, to expect a \verb|const Base&| or \verb|const B*| and call the function with either \verb|*ptr.get()| or \verb|ptr.get()|. These conversions are safe because the \verb|shared_ptr|'s lifetime is longer than the lifetime of the reference or pointer passed to the caller.
 \subsubsection{Inefficient Stream Use Check}
 \par This problem consists of two parts. Firstly what makes it marginally inefficient to stream characters as strings. The standard defines that the hierarchy of the classes which handle Input/Output should look like in Figure:\ref{cpp_io_hierarch}.
 \begin{figure}[H]
@@ -91,6 +91,7 @@ basic_string&  append(const basic_string& str);
 \subsection{Implementations}
 \par In this section I am going to cover the implementation details of each module, covering the possible pitfalls and issues with implementing a standalone Clang-tidy module.
 \subsubsection{General implementation details}
+\par Firstly a definition of an AST matcher. When I am referring to AST matcher, or matcher for short, I specifically mean a C++ object that can be parameterized with the details of an AST subtree and with which Clang-tidy framework can find the corresponding AST subtrees. \medskip
 \par Each check have at least two methods, which are inherited from the \verb|ClangTidyCheck| base class. The first method is \verb|registerMatchers| which acts as a set-up phase. The actual AST matcher structure should be assembled in this function, adding all components. Also, the callback method is specified in this segment, more precisely the object on which the callback method is called, this is usually \verb|this|. In this method, the developer has access to a \verb|MatchFinder| object which controls the matchers. To add an AST matcher to the \verb|MatchFinder|, the member function \verb|addMatcher()| can be used, that takes an AST matcher and a callback object as parameters. \medskip
 \par The other method is the callback function named \verb|check|. This method gets called for every match on the AST by the checkers registered beforehand in the \verb|registerMatchers| method. In this function, the developer has access to virtually everything from the actual source code to the AST nodes, which can be queried from a \verb|MatchResult| object.
 \subsubsection{Inefficient String Concatenation Check}

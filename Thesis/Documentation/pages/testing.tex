@@ -48,3 +48,6 @@ Given the above code and a checker, similar to Container Default Initializer che
 \subsubsection{Test files}
 \par There is a test-file for each module introduced, which are run as part of \\\verb|check-clang-tools| CMake task. Each file contains the mock of the related STL containers and other functionality residing in namespace \verb|std|, for example, conversions, templated type checks, etc.. \medskip
 \par Each test-case in the files are annotated with \verb|CHECK-MESSAGES| and/or \verb|CHECK-FIXES| comments. After them, we formulate the expected diagnostic messages and also the expected FixItHints fixes.
+\subsection{Testing on industrial-grade applications}
+\par The modules were tested against the codebase of the whole LLVM project and subprojects, involving Clang, and indicated that the problems, these modules trying to address, are present in real-life and high-performance applications.
+\par Having run the tool on \verb|2720| \verb|.cpp| source files the resulting the following:
